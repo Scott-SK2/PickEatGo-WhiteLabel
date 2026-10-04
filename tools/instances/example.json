@@ -1,0 +1,42 @@
+{
+  "slug": "burger-house",
+  "domain": "burgerhouse.pickeatgo.app",
+  "timezone": "Europe/Brussels",
+  "powered_by_badge": true,
+  "restaurant": {
+    "name": "Burger House",
+    "email": "marie@burgerhouse.be",
+    "first_name": "Marie",
+    "last_name": "Dupont",
+    "phone": "+32 2 123 45 67",
+    "address": "12 Rue de la Paix, 1000 Bruxelles",
+    "city": "Bruxelles",
+    "cuisine": ["Américain", "Fast-food"]
+  },
+  "render": {
+    "owner_id": "tea-xxxxxxxxxxxxxxxxxxxx",
+    "region": "frankfurt",
+    "repo": "https://github.com/Scott-SK2/PickEatGo-WhiteLabel",
+    "branch": "main",
+    "plan": "starter",
+    "db_plan": "basic_256mb",
+    "kv_plan": "starter",
+    "service_name": "burger-house-api"
+  },
+  "vercel": {
+    "project_name": "burger-house-app"
+  },
+  "shared": {
+    "cloudinary_cloud_name": "pickeatgo",
+    "cloudinary_api_key": "…",
+    "cloudinary_api_secret": "…",
+    "email_host": "smtp.eu.mailgun.org",
+    "email_port": "587",
+    "email_host_user": "postmaster@mg.pickeatgo.app",
+    "email_host_password": "…",
+    "default_from_email": "PickEatGo <no-reply@pickeatgo.app>",
+    "vapid_admin_email": "contact@pickeatgo.app",
+    "admin_email": "support@pickeatgo.app",
+    "admin_password": "…"
+  }
+}
