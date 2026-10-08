@@ -28,10 +28,10 @@ class Branding(models.Model):
     welcome_text = models.CharField(max_length=300, blank=True, help_text="Paragraphe sous le slogan")
 
     # Icônes d'installation et image de partage
-    icon_192      = models.ImageField(upload_to=branding_upload_path, blank=True, null=True)
-    icon_512      = models.ImageField(upload_to=branding_upload_path, blank=True, null=True)
-    icon_maskable = models.ImageField(upload_to=branding_upload_path, blank=True, null=True)
-    share_image   = models.ImageField(upload_to=branding_upload_path, blank=True, null=True, help_text="1200 × 630 px conseillé")
+    icon_192      = models.ImageField(upload_to=branding_upload_path, max_length=255, blank=True, null=True)
+    icon_512      = models.ImageField(upload_to=branding_upload_path, max_length=255, blank=True, null=True)
+    icon_maskable = models.ImageField(upload_to=branding_upload_path, max_length=255, blank=True, null=True)
+    share_image   = models.ImageField(upload_to=branding_upload_path, max_length=255, blank=True, null=True, help_text="1200 × 630 px conseillé")
     theme_color   = models.CharField(max_length=7, default=DEFAULT_THEME_COLOR)
 
     # Réseaux sociaux : {"facebook": url, "instagram": url, "tiktok": url, "website": url}

@@ -55,6 +55,7 @@ class MenuItem(models.Model):
     # Format accepté : JPEG, PNG, WebP — max 5MB (contrôlé côté view)
     image       = models.ImageField(
         upload_to=menu_item_image_path,
+        max_length=255,                      # identifiant Cloudinary : dossier d'instance + restaurant + fichier
         blank=True,
         null=True,
         help_text="Photo du plat (JPEG/PNG/WebP, max 5 MB)"
@@ -231,7 +232,7 @@ class MenuItemPhoto(models.Model):
     MAX_PHOTOS = 5
 
     item       = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name="photos")
-    image      = models.ImageField(upload_to=menu_item_photo_path)
+    image      = models.ImageField(upload_to=menu_item_photo_path, max_length=255)
     order      = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text="Si True, le restaurateur peut voir le numéro dans les commandes"
     )
     role       = models.CharField(max_length=20, choices=ROLE_CHOICES, default=CLIENT)
-    avatar     = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    avatar     = models.ImageField(upload_to="avatars/", max_length=255, blank=True, null=True)
 
     is_active   = models.BooleanField(default=True)
     is_staff    = models.BooleanField(default=False)

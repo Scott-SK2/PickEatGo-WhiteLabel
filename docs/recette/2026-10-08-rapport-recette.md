@@ -6,7 +6,7 @@
 | API | https://pickeatgo-whitelabel.onrender.com (version déployée `938e6b4e3f`, branche `main`) |
 | Mode | `APP_MODE=single`, fuseau Europe/Brussels, mention « propulsé par » affichée |
 | Méthode | Parcours automatisés dans Chromium (12 tailles d'écran) + appels directs à l'API, avec des données marquées **TEST** |
-| Comptes utilisés | Éditeur `scott.kula.kula@gmail.com` (rôle admin) ; clients de test `test-client-…@example.com` |
+| Comptes utilisés | Éditeur `scott.kula.kula@gmail.com` (rôle admin) ; restaurateur `scott-kula-kula@hotmail.be` ; clients de test `test-client-…@example.com` |
 
 Les captures sont dans `captures/`, les résultats bruts dans `resultats-R1-R14.json`, `resultats-R4-R13.json`,
 `journal-passe-1.txt` et `journal-passe-2.txt`.
@@ -22,17 +22,17 @@ Les captures sont dans `captures/`, les résultats bruts dans `resultats-R1-R14.
 | R5 Code promo et fidélité | **OK** | RECETTE10 = −10 %, récompense fidélité après 3 commandes, non-cumul (code prioritaire), annulation client |
 | R6 Pas d'inscription restaurateur, pas de création de restaurant | **OK** | Inscription avec rôle restaurateur refusée (400) ; création de restaurant refusée (401 / 403) |
 | R7 Cloisonnement de l'instance | **OK** | Un identifiant de restaurant autre que celui de l'instance répond 404 ; les écrans de la place de marché (validation, contrats) sont absents |
-| R8 « Mon application » visible sur le site | **OK** | Slogan, logo, réseaux, mentions légales et manifest reflètent la marque saisie |
+| R8 « Mon application » visible sur le site | **OK** | Carte du restaurateur (identité, icônes, textes légaux, lien & QR) ; slogan, logo, réseaux, mentions légales et manifest reflètent la marque saisie |
 | R9 E-mails de marque | **Non testable ici** | SMTP non configuré sur l'instance (fiche : « console, non envoyés ») |
-| R10 Mode caissier (PIN employé) | **À faire par vous** | Nécessite le mot de passe du compte restaurateur (`scott-kula-kula@hotmail.be`) |
+| R10 Mode caissier (PIN employé) | **OK** | PIN inconnu refusé, PIN caissier accepté, commande enregistrée au nom de l'employée, sortie réservée au gérant, survit au rechargement |
 | R11 Interrupteur « fermé » | **OK** | Bandeau « Fermé », carte consultable, commande refusée par l'API (400), réouverture OK |
 | R12 Console éditeur | **OK** | Fiche d'instance exacte, menus de la plateforme absents, utilisateurs limités à l'instance |
 | R13 Plateforme PickEatGo inchangée | **OK** | https://pick-eat-go.vercel.app affiche toujours l'accueil multi-restaurants avec recherche |
 | R14 Ergonomie tactile et lisibilité | **OK avec réserve** | Quelques cibles tactiles < 40 px dans le pied de page (corrigées dans ce lot, à déployer) |
 | R15 Outillage de création d'instance | **OK en simulation** | `create_instance.py --dry-run` produit les 6 étapes attendues ; la création réelle demande vos clés Render / Vercel |
 
-Bilan : **11 scénarios validés**, 1 validé avec réserve (R14), 1 validé en simulation (R15), 2 à réaliser sur vos
-appareils ou après configuration (R2, R9), 1 en attente d'un accès (R10).
+Bilan : **12 scénarios validés**, 1 validé avec réserve (R14), 1 validé en simulation (R15), 2 à réaliser sur vos
+appareils ou après configuration (R2, R9).
 
 ## 2. Détail par scénario
 
@@ -108,8 +108,29 @@ Réglages de test : code RECETTE10 (−10 %), fidélité 3 commandes → −10 %
 - Manifest : nom « Resto Préprod », nom court « Resto Prépro », 3 icônes Cloudinary (192, 512, maskable),
   raccourcis « Commander » et « Mes commandes ».
 
+Côté restaurateur, Paramètres → Mon application : onglets Identité, Icônes, Coordonnées & réseaux, Textes légaux (⚠ tant que
+les conditions et la confidentialité ne sont pas saisies), Lien & QR code (adresse publique, QR à télécharger) et Publication.
+
 ![Accueil avec marque](captures/R8-home.png)
 ![Mentions légales](captures/R8-legal.png)
+![Mon application — identité](captures/R8-myapp-identite.png)
+![Mon application — icônes](captures/R8-myapp-icones.png)
+![Mon application — textes légaux](captures/R8-myapp-legal.png)
+![Mon application — lien et QR](captures/R8-myapp-qr.png)
+
+### R10 — Mode caissier
+Équipe de test : Sarah TEST (caissier, PIN 4826), Marco TEST (gérant, PIN 7391).
+
+- Bouton « Mode caissier » du tableau de bord : clavier PIN, « 2 membre(s) de l'équipe ». Code 0000 refusé (« Code incorrect »).
+- Code 4826 : écran caisse plein écran, bandeau « Sarah TEST (Caissier) », colonnes Nouvelles / En cours / Prêtes.
+- Commande #4509 confirmée depuis la caisse : enregistrée avec `employee_name = Sarah TEST`.
+- « Quitter » : demande le code d'un gérant ; 4826 refusé, 7391 accepté, retour au tableau de bord.
+- Après rechargement de la page, la caisse reste ouverte (tablette au comptoir).
+
+![Tableau de bord](captures/R10-dashboard.png)
+![PIN refusé](captures/R10-pin-refuse.png)
+![Caisse](captures/R10-caissier.png)
+![Sortie refusée sans gérant](captures/R10-sortie-refusee.png)
 
 ### R11 — Interrupteur « fermé »
 Interrupteur basculé par l'API : accueil « ● Fermé », bouton « Fermé · voir la carte → », bandeau « Le restaurant
@@ -143,16 +164,14 @@ déploiement initial, deux cron jobs, projet Vercel et domaine, puis la fiche de
 | A2 | Taper `/#menu` ou `/#legal` dans la barre d'adresse alors que le site est déjà ouvert ramenait à l'accueil | Le changement d'ancre est maintenant lu depuis l'URL (`frontend/lib/useHistoryPage.js`) |
 | A3 | Un client en livraison qui rechargeait la page pendant l'étape « En livraison » perdait l'écran de suivi | L'étape 4 est restaurée comme les autres (`frontend/app/page.jsx`) |
 | A4 | L'accueil affichait « ★ 5 (0 commandes) » : le compteur de commandes du restaurant n'était jamais incrémenté | Incrément à chaque commande remise au client (`backend/apps/orders/models.py`) |
-| A5 | Le journal technique de la fiche d'instance restait vide (0 entrée) même après des erreurs 500 | Les erreurs de requêtes, de sécurité et de base alimentent le journal (`backend/pickeatgo/settings_prod.py`) |
+| A5 | Le journal technique de la fiche d'instance restait vide (0 entrée) même après des erreurs 500 | Les erreurs de requêtes, de sécurité et de base alimentent le journal, avec la fin de la trace (`backend/pickeatgo/settings_prod.py`, `apps/tenant/logbuffer.py`) |
+| A6 | **Photos de plat et photos du lieu : erreur 500 en production.** Cause trouvée en reproduisant localement : l'identifiant Cloudinary `pickeatgo-single/menus/<restaurant>/<plat>-xxxxxxxx` fait 105 caractères, la colonne n'en acceptait que 100 (la plateforme utilisait le dossier plus court `pickeatgo`). Le logo (80 caractères) passait, d'où la confusion | Colonnes image portées à 255 caractères (migrations `menus 0006`, `restaurants 0013`, `tenant 0002`, `accounts 0003`, appliquées automatiquement au démarrage du service) + test de non-régression `tests/test_uploads_long_folder.py` |
 
-Vérifications faites avant envoi : build Next.js OK, 139 tests en mode single et 140 tests en mode plateforme passés.
+Vérifications faites avant envoi : build Next.js OK, 140 tests en mode single et 141 tests en mode plateforme passés.
 
-### Anomalie ouverte
-**Photos de plat et photos du lieu : erreur 500 en production** (`POST /menus/items/{id}/upload-image/` et
-`POST /restaurants/{id}/photos/`), alors que les envois du logo et des icônes vers Cloudinary fonctionnent et que
-le même code répond 200 en local. Le journal d'instance était vide (A5). Après déploiement de ce lot, refaire un envoi
-de photo depuis le tableau de bord puis lire le journal dans Console éditeur → Instance ; ou consulter les logs du
-service sur Render au moment de l'envoi. Les plats de test ont été créés sans photo.
+### À vérifier après déploiement
+Envoyer une photo de plat et une photo du lieu depuis le tableau de bord (A6) : l'URL retournée doit commencer par
+`https://res.cloudinary.com/`. Les plats de test ont été créés sans photo.
 
 ### Remarques mineures (non corrigées)
 - Panier en livraison : tant que le code postal n'est pas desservi, la ligne « Frais de livraison » affiche « Offerts ».
@@ -168,22 +187,19 @@ service sur Render au moment de l'envoi. Les plats de test ont été créés san
 3. **R9 — E-mails** : une fois le SMTP configuré (variables `EMAIL_*` sur Render), vérifier l'e-mail de bienvenue,
    de confirmation de commande et de réinitialisation de mot de passe (nom, logo et couleur du restaurant, pas de
    mention PickEatGo autre que le badge si activé).
-4. **R10 — Mode caissier** : avec le compte restaurateur, Tableau de bord → Mode caissier, PIN 4826 (Sarah TEST,
-   caissier) et 7391 (Marco TEST, gérant) ; vérifier les droits de chacun et le nom de l'employé sur la commande.
-   Si vous me transmettez le mot de passe de `scott-kula-kula@hotmail.be`, je peux le faire.
-5. **Impression** : ticket de commande et clôture de caisse sur votre imprimante.
-6. **R15 — Création réelle d'une instance** avec `RENDER_API_KEY` et `VERCEL_TOKEN` (voir `docs/12-creer-une-instance.md`).
-7. **Textes légaux** : saisir les conditions de commande et la politique de confidentialité (modèles fournis),
+4. **Impression** : ticket de commande et clôture de caisse sur votre imprimante.
+5. **R15 — Création réelle d'une instance** avec `RENDER_API_KEY` et `VERCEL_TOKEN` (voir `docs/12-creer-une-instance.md`).
+6. **Textes légaux** : saisir les conditions de commande et la politique de confidentialité (modèles fournis),
    ce qui termine la liste de publication.
-8. **Reportés à plus tard (déjà notés)** : domaine personnalisé (étape 9) et cron jobs `stock_digest` / `weekly_report`
+7. **Reportés à plus tard (déjà notés)** : domaine personnalisé (étape 9) et cron jobs `stock_digest` / `weekly_report`
    (étape 10, après le SMTP).
-9. **Sécurité** : changer le mot de passe de l'éditeur et du restaurateur après la recette (ils ont circulé par écrit).
+8. **Sécurité** : changer le mot de passe de l'éditeur et du restaurateur après la recette (ils ont circulé par écrit).
 
 ## 5. Données de test à supprimer après la recette
 
 - Clients : `test-client-muz9m55c@example.com`, `test-client-muz9ooc9@example.com`, `test-client-muz9wdi4@example.com`,
   `test-client-muz9wt3y@example.com` (Console éditeur → Utilisateurs).
-- Commandes #4501 à #4507 (historique ; elles comptent dans le chiffre d'affaires affiché : 63 € puis 71,55 €).
+- Commandes #4501 à #4509 (historique ; elles comptent dans le chiffre d'affaires affiché).
 - Plats « TEST … » (9), code promo RECETTE10, employés Sarah TEST et Marco TEST, zones de livraison 1000 / 1050.
 - Textes « (TEST) » dans Mon application (slogan, à propos, mentions légales) et horaires 00:01–23:59.
 - Un avis 5 ★ « Avis de recette (TEST) ».
