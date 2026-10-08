@@ -191,7 +191,7 @@ export default function PickEatGoClient() {
     if (savedSlot)  setSelectedSlot(savedSlot);
     if (savedResto) setOrderRestaurantName(savedResto);
     if (savedId)    setLastOrderId(savedId);
-    if (savedOrder && savedStep <= 3 && !pageFromUrl()) setPage("confirm");
+    if (savedOrder && savedStep <= 4 && !pageFromUrl()) setPage("confirm");   // 4 = « en livraison » : le suivi doit survivre au rechargement
   }, []);
 
   // ─── Panier et restaurant en cours : survivent au rechargement (localStorage) ──

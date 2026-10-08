@@ -25,7 +25,9 @@ export function useHistoryPage(page, setPage, { home = "home", replace = [], pag
   useEffect(() => {
     const onPop = (e) => {
       fromPop.current = true;
-      setPage((e.state && e.state.page) || home);
+      // Entrée sans écran mémorisé (ancre tapée dans la barre d'adresse, lien #écran) : on lit l'URL
+      const fromUrl = pageFromUrl();
+      setPage((e.state && e.state.page) || (fromUrl && (!pages || pages.includes(fromUrl)) ? fromUrl : home));
     };
     window.addEventListener("popstate", onPop);
     // Rechargement : on reprend l'écran indiqué par l'URL

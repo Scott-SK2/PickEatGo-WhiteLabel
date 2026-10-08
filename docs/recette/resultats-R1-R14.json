@@ -1,0 +1,469 @@
+[
+  {
+    "device": "android-320",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "android-320",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "galaxy-s8",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "galaxy-s8",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "iphone-se",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "iphone-se",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "iphone-se",
+    "scenario": "R1-about",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "fav": 0,
+      "hours": 7
+    }
+  },
+  {
+    "device": "iphone-se",
+    "scenario": "R1-legal",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "blocks": 3
+    }
+  },
+  {
+    "device": "iphone-se",
+    "scenario": "login",
+    "overflow": 0,
+    "smallTargets": 0,
+    "smallFonts": 0,
+    "errors": [
+      "Access to fetch at 'https://pickeatgo-whitelabel.onrender.com/api/v1/health/' from origin 'https://pick-eat-go-white-label.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    ],
+    "facts": {
+      "roleSelector": 0,
+      "logo": "Resto Préprod"
+    }
+  },
+  {
+    "device": "iphone-14",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "iphone-14",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "pixel-7",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "pixel-7",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "iphone-max",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "iphone-max",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "phone-land",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "phone-land",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "ipad-mini",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "ipad-mini",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "ipad-mini",
+    "scenario": "R1-about",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "fav": 0,
+      "hours": 7
+    }
+  },
+  {
+    "device": "ipad-mini",
+    "scenario": "R1-legal",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "blocks": 3
+    }
+  },
+  {
+    "device": "ipad-mini",
+    "scenario": "login",
+    "overflow": 0,
+    "smallTargets": 0,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "roleSelector": 0,
+      "logo": "Resto Préprod"
+    }
+  },
+  {
+    "device": "ipad-land",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "ipad-land",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "ipad-pro",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "ipad-pro",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": 0,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "laptop",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "laptop",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 7,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "R1-home",
+    "overflow": 0,
+    "smallTargets": 6,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "name": "Resto Préprod",
+      "open": "● Ouvert · ferme à 23:59",
+      "search": 0,
+      "chips": 0,
+      "otherRest": 0,
+      "footer": 1,
+      "badge": 1,
+      "tagline": "Le vrai goût maison, prêt à l'heure que vous voulez"
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "R1-menu",
+    "overflow": 0,
+    "smallTargets": 7,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "tabs": 4,
+      "empty": ""
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "R1-about",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "fav": 0,
+      "hours": 7
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "R1-legal",
+    "overflow": 0,
+    "smallTargets": 5,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "blocks": 3
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "login",
+    "overflow": 0,
+    "smallTargets": 2,
+    "smallFonts": null,
+    "errors": [],
+    "facts": {
+      "roleSelector": 0,
+      "logo": "Resto Préprod"
+    }
+  }
+]
