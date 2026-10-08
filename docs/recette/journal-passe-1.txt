@@ -1,0 +1,13 @@
+OK  R3 Création du compte client test-client-muz9wt3y@example.com → 201
+OK  R3 Commande créée et visible côté restaurant #4502 total 14.00 € (9,50 + 1,00 bacon + 3,50)
+OK  R3 Étapes suivies en direct jusqu'à « prête » (WebSocket / repli 5 s) « Confirmée » en 3.6 s · « En cuisine » en 4.6 s · écran « prête » en 4.5 s
+OK  R3 Récupérée, paiement carte enregistré, notation 5★ écran « Bon appétit » en 5.0 s · statut recuperee, paiement carte, note 5
+OK  R3 Aucune erreur JavaScript pendant le parcours 
+OK  R4 Hors zone : refus clair et bouton bloqué « ⚠️ Nous ne livrons pas encore le code postal 9999. » · bouton « Adresse non desservie »
+OK  R4 En zone mais sous le minimum : frais 2,50 € affichés, minimum appliqué « Minimum 15.00 € pour la livraison » · 🛵 Livraison : tous les jours, aux heures d'ouverture · frais 2.50 € (offerts dès 40.00 €)
+OK  R4 Commande livraison créée : adresse, frais 2,50 €, total correct #4503 1 Rue Test 1000 frais 2.50 total 26.00 (2,50 + 11 + 10 + 2,50 frais)
+KO  R4 Cycle livraison : prête → en livraison → livrée (suivi client) étape affichée « Prête » en 0.5 s · livrée en null s · statut en_livraison · paiement especes
+OK  R5 Code promo : remise 10 % calculée et une seule remise #4504 ✓ Code RECETTE10 appliqué (-10 %) · remise 1.00 € · total 9.00 € (5,50 + 4,50 − 10 %)
+KO  R5 Après 3 commandes récupérées : récompense fidélité prête et appliquée dans le panier tampons 2/3 · ⭐ Carte de fidélité : 2 / 3 commande(s). Encore 1 pour obtenir -10 %.
+OK  R5 Code promo et fidélité ensemble : le code est prioritaire, une seule remise #4505 remise « Code RECETTE10 (-10 %) » 0.95 €
+OK  R5 Annulation par le client tant que « nouvelle » statut annulee

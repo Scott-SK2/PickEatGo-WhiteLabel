@@ -114,23 +114,29 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
+        # Journal technique récent de la fiche d'instance (console éditeur) : les loggers ci-dessous
+        # ne remontent pas à la racine (propagate=False), ils doivent donc l'alimenter directement.
+        "memory": {
+            "class": "apps.tenant.logbuffer.MemoryLogHandler",
+            "level": "WARNING",
+        },
     },
     "loggers": {
         # Erreurs de requêtes Django (500, 404, etc.) → traceback complet
         "django.request": {
-            "handlers": ["console"],
+            "handlers": ["console", "memory"],
             "level": "ERROR",
             "propagate": False,
         },
         # Erreurs de sécurité (ALLOWED_HOSTS, CSRF, etc.)
         "django.security": {
-            "handlers": ["console"],
+            "handlers": ["console", "memory"],
             "level": "ERROR",
             "propagate": False,
         },
         # Erreurs base de données
         "django.db.backends": {
-            "handlers": ["console"],
+            "handlers": ["console", "memory"],
             "level": "ERROR",
             "propagate": False,
         },

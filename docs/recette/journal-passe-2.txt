@@ -1,0 +1,12 @@
+OK  R4 Cycle livraison : prête → en livraison → livrée, suivi côté client « En livraison 🛵 » affiché en 0.1 s · écran « livrée » en 3.0 s · statut recuperee · paiement especes
+KO  R5 Après 3 commandes récupérées : récompense fidélité prête et appliquée dans le panier tampons 3/3 ·  · Sous-total 9.50 € Frais de service Gratuit Total 9.50 €
+OK  R5 Code promo et fidélité ensemble : le code est prioritaire, une seule remise #4506 panier : Sous-total 9.50 € Code RECETTE10 −0.95 € Frais de service Gratuit Total 8.55 € · remise « Code RECETTE10 (-10 %) » 0.95 €
+OK  R5 Annulation par le client tant que « nouvelle » ; les tampons fidélité sont conservés statut annulee · tampons 3/3
+OK  R8 Slogan, réseaux et logo visibles sur le site « Le vrai goût maison, prêt à l'heure que vous voulez » · Instagram 1 · logo 1
+OK  R8 Mentions légales publiées sur /#legal Raison sociale Resto Préprod SRL (TEST) Numéro d'entreprise 0123.456.789 TVA BE 0123.456.7
+KO  R8 Manifest généré depuis la marque (nom, icônes Cloudinary) Resto Préprod · Resto Prépro · 3 icônes
+OK  R11 Interrupteur fermé : le site annonce la fermeture, la carte reste consultable, la commande est refusée « ● Fermé » · bouton « Fermé · voir la carte → » · API 400 {"non_field_errors":["Ce restaurant est actuellement fermé (fermé)."]}
+OK  R11 Réouverture par l'interrupteur {"is_open":true,"is_open_now":true,"open_status":"Ouvert · ferme à 23:59"}
+OK  R12 Console éditeur : fiche d'instance exacte, pas d'écran de validation ni de contrats menu : Dashboard | Instance | Utilisateurs | Signalements | Statistiques | Paramètres | Déconnexion
+OK  R12 Utilisateurs limités à l'instance 5 ligne(s) : restaurateur, éditeur et client(s) de test
+OK  R13 Plateforme PickEatGo : accueil multi-restaurants avec recherche {"title":"PickEatGo — Commandez, récupérez, régalez-vous","search":1,"hero":1,"single":0,"text":"🍔 PickEatGo Rechercher un restaurant... Connexion 🚀 Sans attente, sans livraison Commander. Récupérer. C'est tout. Pré"}

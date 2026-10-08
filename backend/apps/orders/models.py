@@ -169,6 +169,11 @@ class Order(models.Model):
         if next_status:
             self.status = next_status
             self.save(update_fields=["status", "updated_at"])
+            if next_status == self.PICKED_UP and self.restaurant_id:
+                # Compteur public « (N commandes) » de la fiche du restaurant : commandes remises au client
+                from django.db.models import F
+                from apps.restaurants.models import Restaurant
+                Restaurant.objects.filter(pk=self.restaurant_id).update(total_orders=F("total_orders") + 1)
         return self.status
 
 
