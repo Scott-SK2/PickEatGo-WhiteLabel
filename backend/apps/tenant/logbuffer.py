@@ -10,6 +10,7 @@ from collections import deque
 from datetime import datetime, timezone
 
 MAX_RECORDS = 100
+MAX_MESSAGE_CHARS = 2000
 _records = deque(maxlen=MAX_RECORDS)
 _lock = threading.Lock()
 
@@ -17,11 +18,14 @@ _lock = threading.Lock()
 class MemoryLogHandler(logging.Handler):
     def emit(self, record):
         try:
+            text = self.format(record)          # message + traceback éventuel
+            if len(text) > MAX_MESSAGE_CHARS:   # on garde le début et surtout la fin (la cause de l'erreur)
+                text = text[:400] + "\n…\n" + text[-(MAX_MESSAGE_CHARS - 400):]
             entry = {
                 "time": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(timespec="seconds"),
                 "level": record.levelname,
                 "logger": record.name,
-                "message": self.format(record)[:500],
+                "message": text,
             }
         except Exception:
             return

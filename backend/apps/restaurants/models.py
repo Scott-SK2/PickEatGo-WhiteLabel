@@ -39,8 +39,8 @@ class Restaurant(models.Model):
     email       = models.EmailField(blank=True)
 
     # Médias
-    logo        = models.ImageField(upload_to="restaurants/logos/",   blank=True, null=True)
-    banner      = models.ImageField(upload_to="restaurants/banners/", blank=True, null=True)
+    logo        = models.ImageField(upload_to="restaurants/logos/",   max_length=255, blank=True, null=True)
+    banner      = models.ImageField(upload_to="restaurants/banners/", max_length=255, blank=True, null=True)
     banner_color = models.CharField(max_length=7, default="#FF6B2C")  # fallback couleur
     emoji        = models.CharField(max_length=10, default="🍽️", help_text="Emoji affiché si pas de logo")
 
@@ -313,7 +313,7 @@ class RestaurantPhoto(models.Model):
     MAX_PHOTOS = 10
 
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name="gallery")
-    image      = models.ImageField(upload_to=restaurant_photo_path)
+    image      = models.ImageField(upload_to=restaurant_photo_path, max_length=255)
     caption    = models.CharField(max_length=80, blank=True)
     order      = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
