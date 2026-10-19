@@ -74,3 +74,37 @@ class TestCreateAdmin:
         monkeypatch.setenv("ADMIN_RESET_PASSWORD", "1")
         call_command("create_admin")
         assert django_user_model.objects.get(email="boss@test.com").check_password("newpass456")
+
+
+@pytest.mark.django_db
+class TestAdminResetPassword:
+    """Console éditeur : « Réinitialiser le mot de passe » sur la fiche d'un utilisateur."""
+
+    def test_admin_generates_temporary_password_and_closes_sessions(self, api_client, admin_user, client_user):
+        # Session ouverte du client (jeton de rafraîchissement émis par une connexion)
+        r = api_client.post("/api/v1/auth/login/", {"email": client_user.email, "password": "pass1234"}, format="json")
+        assert r.status_code == 200
+        old_refresh = r.data["refresh"]
+        api_client.force_authenticate(admin_user)
+        r = api_client.post(f"/api/v1/auth/users/{client_user.id}/reset-password/")
+        assert r.status_code == 200, r.data
+        temp = r.data["temporary_password"]
+        assert r.data["email"] == client_user.email
+        assert len(temp) == 14 and temp.count("-") == 2 and not any(c in temp for c in "0O1lI")
+        client_user.refresh_from_db()
+        assert client_user.check_password(temp) and not client_user.check_password("pass1234")
+        # L'ancienne session ne peut plus se renouveler, le nouveau mot de passe permet de se connecter
+        api_client.force_authenticate(None)
+        assert api_client.post("/api/v1/auth/refresh/", {"refresh": old_refresh}, format="json").status_code == 401
+        assert api_client.post("/api/v1/auth/login/", {"email": client_user.email, "password": temp}, format="json").status_code == 200
+        # Deux générations successives donnent des mots de passe différents
+        api_client.force_authenticate(admin_user)
+        assert api_client.post(f"/api/v1/auth/users/{client_user.id}/reset-password/").data["temporary_password"] != temp
+
+    def test_only_admin(self, api_client, restaurateur_user, client_user):
+        assert api_client.post(f"/api/v1/auth/users/{client_user.id}/reset-password/").status_code == 401
+        api_client.force_authenticate(restaurateur_user)
+        assert api_client.post(f"/api/v1/auth/users/{client_user.id}/reset-password/").status_code == 403
+        client_user.refresh_from_db()
+        assert client_user.check_password("pass1234")
+

@@ -84,6 +84,47 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # ── Mot de passe ───────────────────────────────────────────────────────────────
 from rest_framework.throttling import ScopedRateThrottle
+import secrets
+from django.shortcuts import get_object_or_404
+
+TEMP_PASSWORD_ALPHABET = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"   # sans 0/O, 1/l/I
+
+
+def generate_temporary_password():
+    """12 caractères lisibles, groupés par 4 (ex. « Kf7r-Tq2m-Wp9x ») : facile à dicter, assez fort pour un usage unique."""
+    chars = "".join(secrets.choice(TEMP_PASSWORD_ALPHABET) for _ in range(12))
+    return "-".join(chars[i:i + 4] for i in range(0, 12, 4))
+
+
+def revoke_refresh_tokens(user):
+    """Ferme les sessions ouvertes : tous les jetons de rafraîchissement connus de l'utilisateur sont révoqués."""
+    try:
+        from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+        for token in OutstandingToken.objects.filter(user=user):
+            BlacklistedToken.objects.get_or_create(token=token)
+    except Exception:
+        pass
+
+
+class AdminResetPasswordView(APIView):
+    """
+    POST /api/v1/auth/users/{id}/reset-password/ — Éditeur (admin) uniquement.
+    Génère un mot de passe temporaire, le pose sur le compte et le renvoie UNE SEULE FOIS (il n'est pas conservé
+    en clair). Les sessions ouvertes de l'utilisateur sont fermées. Sert quand l'instance n'a pas de SMTP
+    (pas de « mot de passe oublié ») ou à la remise des accès au restaurateur.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        if not request.user.is_admin_user:
+            return Response({"detail": "Accès réservé aux admins."}, status=status.HTTP_403_FORBIDDEN)
+        user = get_object_or_404(User, pk=pk)
+        temporary = generate_temporary_password()
+        user.set_password(temporary)
+        user.save(update_fields=["password"])
+        revoke_refresh_tokens(user)
+        return Response({"email": user.email, "temporary_password": temporary,
+                         "detail": "Mot de passe temporaire généré. Il ne sera plus affiché : transmettez-le à l'utilisateur, qui le changera dans « Mon profil »."})
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
