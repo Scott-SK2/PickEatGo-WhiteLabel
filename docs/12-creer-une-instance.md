@@ -35,6 +35,9 @@ demi-journée à la main, moins d'une heure avec l'outillage.
    `stock_digest` (`0 7 * * *`) et `weekly_report` (`0 8 * * 1`) avec les mêmes variables.
 8. Remettre les accès au restaurateur : il complète **Paramètres → Mon application** (identité,
    icônes, textes légaux), ses horaires, son menu et ses modes de commande, puis ouvre.
+   Il change son mot de passe initial dans « Mon profil » (`/#profile`). En cas d'oubli sans SMTP :
+   Console éditeur → Utilisateurs → 🔑 **Réinitialiser le mot de passe** génère un mot de passe
+   temporaire affiché une seule fois (les sessions ouvertes du compte sont fermées).
 9. Lister l'instance dans le registre interne (`tools/instances/registry.json`, non versionné :
    nom, domaine, identifiants des services, date de mise en service, contact).
 

@@ -13,6 +13,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const apiFetch = (endpoint, opts = {}) => coreFetch(endpoint, opts);
 const get   = (url)       => apiFetch(url);
 const patch = (url, body) => apiFetch(url, { method: "PATCH", body: JSON.stringify(body) });
+const post  = (url, body) => apiFetch(url, { method: "POST",  body: JSON.stringify(body || {}) });
 const del   = (url)       => apiFetch(url, { method: "DELETE" });
 
 
@@ -90,6 +91,7 @@ const Ic = ({n,s=18,c="currentColor"}) => {
     euro:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><path d="M4 10h12M4 14h12"/><path d="M19 6a7 7 0 1 0 0 12"/></svg>,
     logout:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
     refresh:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>,
+    key:        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>,
     orders:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
     edit:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
     note:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
@@ -116,6 +118,8 @@ export default function AdminDashboard() {
   const [confirmModal, setConfirmModal] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [toast, setToast]             = useState(null);
+  const [resetResult, setResetResult] = useState(null);   // mot de passe temporaire affiché une seule fois
+  const [copiedPw, setCopiedPw]       = useState(false);
   const [loading, setLoading]         = useState(true);
 
   const [contractSelected, setContractSelected] = useState(null);
@@ -157,6 +161,9 @@ export default function AdminDashboard() {
   const blockUser   =async(id)=>{try{await patch(`/auth/users/${id}/`,{is_active:false});setUsers(p=>p.map(u=>u.id===id?{...u,is_active:false}:u));setConfirmModal(null);setSelectedUser(null);showToast("Utilisateur bloqué");}catch(e){showToast(e.message,"error");}};
   const unblockUser =async(id)=>{try{await patch(`/auth/users/${id}/`,{is_active:true});setUsers(p=>p.map(u=>u.id===id?{...u,is_active:true}:u));setConfirmModal(null);showToast("Débloqué ✓");}catch(e){showToast(e.message,"error");}};
   const deleteUser  =async(id)=>{try{await del(`/auth/users/${id}/`);setUsers(p=>p.filter(u=>u.id!==id));setConfirmModal(null);setSelectedUser(null);showToast("Compte supprimé");}catch(e){showToast(e.message,"error");}};
+  // Mot de passe temporaire : généré côté serveur, renvoyé une seule fois, les sessions de l'utilisateur sont fermées
+  const resetPassword=async(id,name)=>{try{const r=await post(`/auth/users/${id}/reset-password/`);setConfirmModal(null);setSelectedUser(null);setCopiedPw(false);setResetResult({name,email:r.email,password:r.temporary_password});}catch(e){showToast(e.message,"error");}};
+  const copyTempPassword=async()=>{try{await navigator.clipboard.writeText(resetResult.password);setCopiedPw(true);}catch{showToast("Copie impossible : sélectionnez le texte","error");}};
   const resolveReport=async(id)=>{try{await patch(`/restaurants/reports/${id}/resolve/`,{});setReports(p=>p.map(r=>r.id===id?{...r,status:"resolved"}:r));showToast("Signalement résolu ✓");}catch(e){showToast(e.message,"error");}};
   const dismissReport=async(id)=>{try{await patch(`/restaurants/reports/${id}/`,{status:"dismissed"});setReports(p=>p.map(r=>r.id===id?{...r,status:"dismissed"}:r));showToast("Signalement classé");}catch(e){showToast(e.message,"error");}};
 
@@ -444,6 +451,7 @@ export default function AdminDashboard() {
                         <td><span style={{background:u.is_active?"#DCFCE7":"#FEE2E2",color:u.is_active?"#16A34A":"#DC2626",fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20}}>{u.is_active?"Actif":"Bloqué"}</span></td>
                         <td onClick={e=>e.stopPropagation()}><div style={{display:"flex",gap:6}}>
                           {u.is_active?<button className="act-btn yellow" onClick={()=>setConfirmModal({type:"block_user",id:u.id,name:`${u.first_name} ${u.last_name}`})}><Ic n="ban" s={13} c="#CA8A04"/></button>:<button className="act-btn green" onClick={()=>unblockUser(u.id)}><Ic n="unlock" s={13} c="#16A34A"/></button>}
+                          <button className="act-btn indigo" title="Réinitialiser le mot de passe" aria-label="Réinitialiser le mot de passe" onClick={()=>setConfirmModal({type:"reset_pw",id:u.id,name:`${u.first_name} ${u.last_name}`,email:u.email})}><Ic n="key" s={13} c="#4F46E5"/></button>
                           <button className="act-btn red" onClick={()=>setConfirmModal({type:"delete_user",id:u.id,name:`${u.first_name} ${u.last_name}`})}><Ic n="trash" s={13} c="#DC2626"/></button>
                         </div></td>
                       </tr>
@@ -466,6 +474,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="detail-footer">
                       {selectedUser.is_active?<button className="full-btn yellow" onClick={()=>setConfirmModal({type:"block_user",id:selectedUser.id,name:`${selectedUser.first_name} ${selectedUser.last_name}`})}>⊘ Bloquer</button>:<button className="full-btn green" onClick={()=>unblockUser(selectedUser.id)}>↺ Débloquer</button>}
+                      <button className="full-btn indigo" onClick={()=>setConfirmModal({type:"reset_pw",id:selectedUser.id,name:`${selectedUser.first_name} ${selectedUser.last_name}`,email:selectedUser.email})}>🔑 Réinitialiser le mot de passe</button>
                       <button className="full-btn red" onClick={()=>setConfirmModal({type:"delete_user",id:selectedUser.id,name:`${selectedUser.first_name} ${selectedUser.last_name}`})}>✕ Supprimer</button>
                     </div>
                   </div>
@@ -753,18 +762,34 @@ export default function AdminDashboard() {
       {confirmModal&&(
         <div className="modal-overlay" onClick={()=>setConfirmModal(null)}>
           <div className="confirm-modal" onClick={e=>e.stopPropagation()}>
-            <div style={{fontSize:40,marginBottom:12,textAlign:"center"}}>{confirmModal.type.includes("delete")?"🗑️":confirmModal.type.includes("block")?"🚫":"⊘"}</div>
-            <h3 className="confirm-title">{{suspend_rest:"Suspendre ce restaurant ?",delete_rest:"Supprimer ce restaurant ?",block_user:"Bloquer cet utilisateur ?",delete_user:"Supprimer ce compte ?"}[confirmModal.type]}</h3>
-            <p className="confirm-sub"><strong>{confirmModal.name}</strong> sera {confirmModal.type.includes("delete")?"définitivement supprimé(e)":confirmModal.type==="block_user"?"bloqué(e)":"suspendu(e)"}.</p>
+            <div style={{fontSize:40,marginBottom:12,textAlign:"center"}}>{confirmModal.type==="reset_pw"?"🔑":confirmModal.type.includes("delete")?"🗑️":confirmModal.type.includes("block")?"🚫":"⊘"}</div>
+            <h3 className="confirm-title">{{suspend_rest:"Suspendre ce restaurant ?",delete_rest:"Supprimer ce restaurant ?",block_user:"Bloquer cet utilisateur ?",delete_user:"Supprimer ce compte ?",reset_pw:"Réinitialiser le mot de passe ?"}[confirmModal.type]}</h3>
+            {confirmModal.type==="reset_pw"
+              ? <p className="confirm-sub">Un mot de passe temporaire sera généré pour <strong>{confirmModal.name}</strong> ({confirmModal.email}) et affiché une seule fois. L'ancien mot de passe cessera de fonctionner et ses sessions ouvertes seront fermées.</p>
+              : <p className="confirm-sub"><strong>{confirmModal.name}</strong> sera {confirmModal.type.includes("delete")?"définitivement supprimé(e)":confirmModal.type==="block_user"?"bloqué(e)":"suspendu(e)"}.</p>}
             <div style={{display:"flex",gap:10,marginTop:20}}>
               <button className="full-btn grey" onClick={()=>setConfirmModal(null)}>Annuler</button>
-              <button className="full-btn red" onClick={()=>{
-                if(confirmModal.type==="suspend_rest")suspendRest(confirmModal.id);
+              <button className={`full-btn ${confirmModal.type==="reset_pw"?"indigo":"red"}`} onClick={()=>{
+                if(confirmModal.type==="reset_pw")resetPassword(confirmModal.id,confirmModal.name);
+                else if(confirmModal.type==="suspend_rest")suspendRest(confirmModal.id);
                 else if(confirmModal.type==="delete_rest")deleteRest(confirmModal.id);
                 else if(confirmModal.type==="block_user")blockUser(confirmModal.id);
                 else if(confirmModal.type==="delete_user")deleteUser(confirmModal.id);
               }}>Confirmer</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {resetResult&&(
+        <div className="modal-overlay" onClick={()=>setResetResult(null)}>
+          <div className="confirm-modal" onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:40,marginBottom:12,textAlign:"center"}}>🔑</div>
+            <h3 className="confirm-title">Mot de passe temporaire</h3>
+            <p className="confirm-sub">Pour <strong>{resetResult.name}</strong> ({resetResult.email}). Il n'est affiché qu'une seule fois.</p>
+            <div className="pw-box"><code>{resetResult.password}</code><button className="pw-copy" onClick={copyTempPassword}>{copiedPw?"✓ Copié":"Copier"}</button></div>
+            <p className="confirm-sub" style={{fontSize:12}}>Transmettez-le par un canal sûr (appel, SMS, en main propre). L'utilisateur le change ensuite dans « Mon profil » → Changer le mot de passe. Ses sessions précédentes ont été fermées.</p>
+            <button className="full-btn grey" style={{marginTop:16}} onClick={()=>setResetResult(null)}>Fermer</button>
           </div>
         </div>
       )}
@@ -875,6 +900,9 @@ const CSS = `
   .full-btn.yellow{background:#FEF9C3;color:#92400E;}.full-btn.yellow:hover{background:#FDE68A;}
   .full-btn.grey{background:var(--bg);color:var(--text-soft);}.full-btn.grey:hover{background:var(--border);}
   .full-btn.indigo{background:var(--primary);color:#fff;}.full-btn.indigo:hover{background:var(--primary-d);}
+  .pw-box{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 10px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px dashed var(--border);}
+  .pw-box code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;font-weight:700;letter-spacing:1px;color:var(--text);user-select:all;}
+  .pw-copy{min-height:40px;padding:0 14px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}
   .full-btn.sm{width:auto;padding:8px 14px;font-size:12px;}
   .report-stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);}
   .report-card{background:#fff;border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);}

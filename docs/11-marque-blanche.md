@@ -90,7 +90,8 @@ icônes, coordonnées et réseaux, textes légaux avec modèles, lien et QR code
   après la première commande.
 - `app/login/page.jsx` : inscription limitée au rôle client, marque du restaurant.
 - `app/dashboard/myapp.jsx` : carte « Mon application » ; `ProfileForm` : cuisine modifiable.
-- `app/admin/page.jsx` + `app/admin/instance.jsx` : console éditeur (fiche d'instance, utilisateurs,
+- `app/admin/page.jsx` + `app/admin/instance.jsx` : console éditeur (fiche d'instance, utilisateurs avec
+  réinitialisation de mot de passe `POST /auth/users/{id}/reset-password/`,
   signalements, statistiques ; validation et contrats retirés).
 - Identité visuelle : aucune feuille de style modifiée, variables de couleur PickEatGo conservées.
 
