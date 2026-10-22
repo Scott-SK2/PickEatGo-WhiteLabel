@@ -157,29 +157,40 @@ export function SingleHome({ rest, brand, reviews = [], reviewsLoading = false, 
 
 export function SiteFooter({ rest, brand, badge, platformName = "PickEatGo", onAbout, onLegal, onHome }) {
   const links = socialLinks(brand);
+  const name = brand.app_name || rest?.name;
+  const address = rest?.address ? `${rest.address}${rest.city && !String(rest.address).toLowerCase().includes(String(rest.city).toLowerCase()) ? `, ${rest.city}` : ""}` : "";
+  const year = new Date().getFullYear();
   return (
     <footer className="sf-footer">
       <div className="sf-grid">
-        <div>
-          <p className="sf-title">{brand.app_name || rest?.name}</p>
-          {rest?.address && <p className="sf-line">📍 {rest.address}{rest.city && !String(rest.address).toLowerCase().includes(String(rest.city).toLowerCase()) ? `, ${rest.city}` : ""}</p>}
-          {rest?.phone && <p className="sf-line">📞 <a href={`tel:${String(rest.phone).replace(/\s/g, "")}`}>{rest.phone}</a></p>}
-          {rest?.email && <p className="sf-line">✉️ <a href={`mailto:${rest.email}`}>{rest.email}</a></p>}
+        <div className="sf-col">
+          <div className="sf-brand">
+            {rest?.logo_url && <img src={rest.logo_url} alt="" className="sf-logo" />}
+            <p className="sf-title">{name}</p>
+          </div>
+          <ul className="sf-contact">
+            {address && <li><span className="sf-ico" aria-hidden="true">📍</span><span>{address}</span></li>}
+            {rest?.phone && <li><span className="sf-ico" aria-hidden="true">📞</span><a href={`tel:${String(rest.phone).replace(/\s/g, "")}`}>{rest.phone}</a></li>}
+            {rest?.email && <li><span className="sf-ico" aria-hidden="true">✉️</span><a href={`mailto:${rest.email}`}>{rest.email}</a></li>}
+          </ul>
         </div>
-        <div>
+        <div className="sf-col">
           {links.length > 0 && (
             <div className="sf-social">
               {links.map(l => <a key={l.key} href={l.url} target="_blank" rel="noopener noreferrer" className="sf-social-btn">{l.icon} {l.label}</a>)}
             </div>
           )}
-          <div className="sf-links">
+          <nav className="sf-links" aria-label="Pied de page">
             <button onClick={onHome}>Accueil</button>
             <button onClick={onAbout}>À propos</button>
             <button onClick={onLegal}>Mentions légales</button>
-          </div>
+          </nav>
         </div>
       </div>
-      {badge && <p className="sf-badge">Application propulsée par <strong>{platformName}</strong></p>}
+      <div className="sf-bottom">
+        <span>© {year} {name}</span>
+        {badge && <span>Application propulsée par <strong>{platformName}</strong></span>}
+      </div>
     </footer>
   );
 }
@@ -295,16 +306,27 @@ export const SINGLE_CSS = `
   .sh-hours-row{display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:var(--text);}
   .sh-hours-row.closed{color:var(--text-soft);} .sh-hours-row.closed span:last-child{color:#DC2626;}
   .sh-muted{font-size:13px;color:#94A3B8;padding:12px 0;}
-  .sf-footer{margin-top:40px;padding:28px 20px calc(28px + env(safe-area-inset-bottom));background:#0F172A;color:#CBD5E1;}
-  .sf-grid{display:grid;grid-template-columns:1fr;gap:20px;max-width:720px;margin:0 auto;}
-  .sf-title{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;}
-  .sf-line{font-size:13px;margin-bottom:5px;} .sf-line a{color:#CBD5E1;text-decoration:none;display:inline-flex;align-items:center;min-height:40px;}
-  .sf-social{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
-  .sf-social-btn{font-size:12px;font-weight:700;color:#fff;background:rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;text-decoration:none;display:inline-flex;align-items:center;min-height:40px;}
-  .sf-links{display:flex;gap:14px;flex-wrap:wrap;}
-  .sf-links button{background:none;border:none;color:#94A3B8;font-size:13px;font-weight:600;cursor:pointer;padding:10px 0;min-height:40px;font-family:inherit;}
+  .app:has(.sf-footer){padding-bottom:0;}                       /* le pied de page sombre termine la page : pas de bande claire dessous */
+  html:has(.sf-footer){background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 50%,#0F172A 50%,#0F172A 100%);}   /* rebond iOS : clair en haut, sombre en bas */
+  .sf-footer{margin-top:40px;padding:32px 20px calc(24px + env(safe-area-inset-bottom));background:#0F172A;color:#CBD5E1;}
+  .sf-grid{display:grid;grid-template-columns:1fr;gap:24px;max-width:860px;margin:0 auto;}
+  .sf-col{display:flex;flex-direction:column;gap:12px;}
+  .sf-brand{display:flex;align-items:center;gap:12px;}
+  .sf-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;background:#fff;}
+  .sf-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;}
+  .sf-contact{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+  .sf-contact li{display:flex;align-items:center;gap:10px;min-height:40px;font-size:14px;line-height:1.4;color:#CBD5E1;}
+  .sf-contact a{color:inherit;text-decoration:none;display:inline-flex;align-items:center;min-height:40px;}
+  .sf-contact a:hover{color:#fff;text-decoration:underline;}
+  .sf-ico{width:22px;text-align:center;font-size:15px;flex-shrink:0;}
+  .sf-social{display:flex;gap:8px;flex-wrap:wrap;}
+  .sf-social-btn{font-size:13px;font-weight:700;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:0 14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;}
+  .sf-social-btn:hover{background:rgba(255,255,255,.14);}
+  .sf-links{display:flex;gap:20px;flex-wrap:wrap;}
+  .sf-links button{background:none;border:none;color:#CBD5E1;font-size:14px;font-weight:600;cursor:pointer;padding:0;min-height:40px;font-family:inherit;}
   .sf-links button:hover{color:#fff;}
-  .sf-badge{text-align:center;font-size:11px;color:#64748B;margin-top:22px;} .sf-badge strong{color:#94A3B8;}
+  .sf-bottom{max-width:860px;margin:24px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#64748B;}
+  .sf-bottom strong{color:#94A3B8;}
   .lg-h2{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;margin-bottom:18px;}
   .lg-block{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;}
   .lg-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;margin-bottom:10px;}
@@ -321,5 +343,5 @@ export const SINGLE_CSS = `
   .nav-link.active{background:var(--primary-l);color:var(--primary);}
   @media(max-width:520px){.nav-links{display:none;}.nav-brand-name{max-width:120px;font-size:15px;}}
   @media(max-width:350px){.nav-brand-name{display:none;}}
-  @media(min-width:1024px){.sh-hero{padding:72px 48px 84px;border-radius:0 0 28px 28px;}.sh-hero-content{max-width:1100px;width:100%;margin:0 auto;}.sh-hero-brand{gap:14px;}.sh-name{font-size:22px;}.sh-tagline{font-size:56px;max-width:640px;}.sh-welcome{font-size:17px;max-width:520px;}.sh-float{font-size:64px;opacity:.3;}.sh-hero-visual{width:40%;}.sh-section{max-width:860px;margin-left:auto;margin-right:auto;}.sf-grid{grid-template-columns:1fr 1fr;}.nav-brand-name{max-width:260px;font-size:18px;}}
+  @media(min-width:1024px){.sh-hero{padding:72px 48px 84px;border-radius:0 0 28px 28px;}.sh-hero-content{max-width:1100px;width:100%;margin:0 auto;}.sh-hero-brand{gap:14px;}.sh-name{font-size:22px;}.sh-tagline{font-size:56px;max-width:640px;}.sh-welcome{font-size:17px;max-width:520px;}.sh-float{font-size:64px;opacity:.3;}.sh-hero-visual{width:40%;}.sh-section{max-width:860px;margin-left:auto;margin-right:auto;}.sf-grid{grid-template-columns:1.2fr 1fr;gap:40px;}.sf-col:last-child{align-items:flex-end;}.sf-footer{padding:40px 32px calc(28px + env(safe-area-inset-bottom));}.nav-brand-name{max-width:260px;font-size:18px;}}
 `;
