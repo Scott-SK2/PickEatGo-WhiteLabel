@@ -4,6 +4,7 @@
  * Chaque changement d'écran crée une entrée : le bouton Retour du téléphone revient
  * à l'écran précédent au lieu de quitter le site. Au rechargement, l'écran est
  * restauré depuis l'URL (#écran) au lieu de repartir de l'accueil.
+ * Chaque changement d'écran ramène en haut de la page.
  *
  *   useHistoryPage(page, setPage, { home: "home", replace: ["confirm"], pages: [...] })
  *   - replace : écrans qui remplacent l'entrée courante (on ne revient pas dessus)
@@ -40,8 +41,12 @@ export function useHistoryPage(page, setPage, { home = "home", replace = [], pag
     return () => window.removeEventListener("popstate", onPop);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const mounted = useRef(false);
   useEffect(() => {
     if (!ready.current) return;
+    // Nouvel écran = on repart du haut (sinon on arrive au milieu de la page, à la position de l'écran précédent)
+    if (mounted.current) { try { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); } catch { window.scrollTo(0, 0); } }
+    mounted.current = true;
     if (fromPop.current) { fromPop.current = false; return; }
     if (window.history.state && window.history.state.page === page) return;
     const url = page === home ? window.location.pathname : `${window.location.pathname}#${page}`;
