@@ -21,6 +21,40 @@ function Logo({ rest, size = 76 }) {
   return <span style={{ fontSize: size * 0.6, lineHeight: 1 }}>{rest?.emoji || "🍽️"}</span>;
 }
 
+// Accroche de l'en-tête : la fin de la phrase (après la dernière ponctuation, ou les derniers mots) prend la couleur de la marque
+export function splitTagline(text) {
+  const t = String(text || "").trim();
+  if (!t) return { head: "", accent: "" };
+  const m = t.match(/^(.*[,:;!?])\s+(.+)$/);
+  if (m && m[2].split(/\s+/).length <= 6) return { head: m[1], accent: m[2] };
+  const w = t.split(/\s+/);
+  if (w.length >= 5) { const n = Math.min(3, Math.floor(w.length / 2)); return { head: w.slice(0, -n).join(" "), accent: w.slice(-n).join(" ") }; }
+  return { head: t, accent: "" };
+}
+
+// Aliments flottants de l'en-tête, choisis d'après la cuisine du restaurant (son emoji en premier)
+const CUISINE_EMOJIS = [
+  [/burger|am[ée]ricain|fast/i, ["🍔", "🍟", "🥤", "🧀"]],
+  [/italien|pizza|p[âa]tes|pasta/i, ["🍕", "🍝", "🧀", "🍷"]],
+  [/japon|sushi|asiat|chinois|tha[iï]|vietnam|ramen|wok|cor[ée]en/i, ["🍣", "🍜", "🥢", "🍱"]],
+  [/belge|friterie|brasserie/i, ["🍟", "🧇", "🍺", "🥐"]],
+  [/mexic|tex/i, ["🌮", "🌯", "🥑", "🌶️"]],
+  [/indien|curry|pakistan/i, ["🍛", "🫓", "🌶️", "🥘"]],
+  [/boulang|p[âa]tiss|caf[ée]|brunch|petit[- ]d[ée]j|salon de th[ée]/i, ["🥐", "☕", "🍰", "🥖"]],
+  [/v[ée]g|healthy|salade|bowl|bio/i, ["🥗", "🥑", "🍅", "🥕"]],
+  [/grec|oriental|liban|turc|kebab|marocain|tunisien/i, ["🥙", "🧆", "🫒", "🍢"]],
+  [/poisson|fruits de mer|sea|moules/i, ["🦐", "🐟", "🦪", "🍋"]],
+  [/fran[çc]ais|bistro|gastro|traditionnel/i, ["🥖", "🧀", "🍷", "🥘"]],
+  [/glace|dessert|cr[êe]pe|gaufre/i, ["🍦", "🧇", "🍓", "🍫"]],
+];
+export function heroEmojis(rest) {
+  const c = Array.isArray(rest?.cuisine) ? rest.cuisine.join(" ") : String(rest?.cuisine || "");
+  let list = ["🍽️", "🥗", "🍕", "🍔"];
+  for (const [re, l] of CUISINE_EMOJIS) { if (re.test(c)) { list = l; break; } }
+  if (rest?.emoji && rest.emoji !== "🍽️" && !list.includes(rest.emoji)) list = [rest.emoji, ...list.slice(0, 3)];   // l'emoji générique n'apporte rien
+  return list;
+}
+
 export function SingleHome({ rest, brand, reviews = [], reviewsLoading = false, onOrder, onAbout, onLightbox, onMenu }) {
   if (!rest) return null;
   const open = rest.open;
@@ -29,30 +63,38 @@ export function SingleHome({ rest, brand, reviews = [], reviewsLoading = false, 
   const gallery = rest.gallery || [];
   const recent = reviews.slice(0, 3);
   const cuisine = Array.isArray(rest.cuisine) ? rest.cuisine.join(" · ") : (rest.cuisine || "");
+  const tagline = splitTagline(brand.tagline || "Commandez en ligne, récupérez sur place.");
+  const floats = heroEmojis(rest);
   return (
     <div className="fade-in">
-      <section className="sh-hero" style={{ background: rest.banner || "#FF6B2C" }}>
+      <section className="sh-hero">
         {rest.banner_url && <img src={rest.banner_url} alt="" className="sh-hero-img" onClick={() => onLightbox && onLightbox({ images: [{ url: rest.banner_url, caption: rest.name }], index: 0 })} />}
         <div className="sh-hero-overlay" />
+        <div className="sh-hero-visual" aria-hidden="true">
+          {floats.map((e, i) => (
+            <span key={i} className="sh-float" style={{ animationDelay: `${i * 0.45}s`, animationDuration: `${3.4 + (i % 3) * 0.6}s`, top: `${8 + i * 22}%`, right: `${6 + (i % 2) * 16 + i * 2}%` }}>{e}</span>
+          ))}
+        </div>
         <div className="sh-hero-content">
-          <Logo rest={rest} />
-          <h1 className="sh-name">{rest.name}</h1>
-          {cuisine && <p className="sh-cuisine">{cuisine}</p>}
+          <div className="sh-hero-brand">
+            <Logo rest={rest} size={52} />
+            <div>
+              <h1 className="sh-name">{rest.name}</h1>
+              {cuisine && <p className="sh-cuisine">{cuisine}</p>}
+            </div>
+          </div>
+          <h2 className="sh-tagline">{tagline.head}{tagline.accent && <><br /><span>{tagline.accent}</span></>}</h2>
+          {brand.welcome_text && <p className="sh-welcome">{brand.welcome_text}</p>}
           <div className="sh-stats">
             <span className={`sh-open ${open ? "open" : "closed"}`}>● {label}</span>
             {rest.rating ? <span>★ {rest.rating} ({rest.total_orders || 0} commandes)</span> : <span>Nouveau</span>}
             <span>⏱ {rest.prepTime || `~${rest.prep_time_avg || 15} min`}</span>
           </div>
+          <button className="sh-order-btn" onClick={open ? onOrder : onMenu}>
+            {open ? "Commander" : label.startsWith("Fermé") ? `${label} · voir la carte` : "Voir la carte"} →
+          </button>
+          {!open && <p className="sh-closed-hint">Le restaurant n'accepte pas de commande pour le moment. La carte reste consultable.</p>}
         </div>
-      </section>
-
-      <section className="sh-intro">
-        <h2 className="sh-tagline">{brand.tagline || "Commandez en ligne, récupérez sur place."}</h2>
-        {brand.welcome_text && <p className="sh-welcome">{brand.welcome_text}</p>}
-        <button className="sh-order-btn" onClick={open ? onOrder : onMenu}>
-          {open ? "Commander" : label.startsWith("Fermé") ? `${label} · voir la carte` : "Voir la carte"} →
-        </button>
-        {!open && <p className="sh-closed-hint">Le restaurant n'accepte pas de commande pour le moment. La carte reste consultable.</p>}
       </section>
 
       {gallery.length > 0 && (
@@ -225,21 +267,26 @@ export function InstallBanner({ appName }) {
 }
 
 export const SINGLE_CSS = `
-  .sh-hero{position:relative;padding:28px 20px 32px;overflow:hidden;}
-  .sh-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;cursor:zoom-in;}
-  .sh-hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25),rgba(0,0,0,.6));pointer-events:none;}
-  .sh-hero-content{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;}
-  .sh-name{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:#fff;}
-  .sh-cuisine{font-size:14px;color:rgba(255,255,255,.75);}
-  .sh-stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.9);font-weight:600;}
+  .sh-hero{position:relative;padding:36px 20px 40px;overflow:hidden;background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);}
+  .sh-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22;cursor:zoom-in;}
+  .sh-hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.6),rgba(30,41,59,.3));pointer-events:none;}
+  .sh-hero-visual{position:absolute;right:0;top:0;bottom:0;width:48%;z-index:1;pointer-events:none;}
+  .sh-float{position:absolute;font-size:34px;line-height:1;opacity:.22;animation:shFloat 3.6s ease-in-out infinite;filter:drop-shadow(0 8px 12px rgba(0,0,0,.4));will-change:transform;}
+  @keyframes shFloat{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-16px) rotate(6deg);}}
+  @media(prefers-reduced-motion:reduce){.sh-float{animation:none;}}
+  .sh-hero-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:10px;max-width:640px;}
+  .sh-hero-brand{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .sh-name{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;line-height:1.2;}
+  .sh-cuisine{font-size:13px;color:rgba(255,255,255,.6);margin-top:2px;}
+  .sh-tagline{font-family:'Sora',sans-serif;font-size:34px;font-weight:800;color:#fff;line-height:1.12;margin:6px 0 2px;}
+  .sh-tagline span{color:var(--primary);}
+  .sh-welcome{font-size:14px;color:rgba(255,255,255,.65);line-height:1.6;max-width:420px;margin:0 0 4px;}
+  .sh-stats{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:rgba(255,255,255,.85);font-weight:600;margin-bottom:8px;}
   .sh-open{padding:4px 12px;border-radius:20px;font-weight:700;}
   .sh-open.open{background:#DCFCE7;color:#15803D;} .sh-open.closed{background:#FEE2E2;color:#B91C1C;}
-  .sh-intro{padding:28px 20px 8px;text-align:center;}
-  .sh-tagline{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:10px;}
-  .sh-welcome{font-size:14px;color:var(--text-soft);line-height:1.6;max-width:520px;margin:0 auto 18px;}
-  .sh-order-btn{display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#fff;border:none;border-radius:14px;padding:15px 26px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(255,107,44,.35);transition:all .2s;}
+  .sh-order-btn{display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#fff;border:none;border-radius:14px;padding:15px 26px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 8px 24px rgba(255,107,44,.35);transition:all .2s;}
   .sh-order-btn:hover{background:var(--primary-d);transform:translateY(-1px);}
-  .sh-closed-hint{font-size:12px;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:8px 12px;margin:14px auto 0;max-width:420px;}
+  .sh-closed-hint{font-size:12px;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:8px 12px;margin:6px 0 0;max-width:420px;}
   .sh-section{padding:22px 20px 0;}
   .sh-section-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:var(--text);margin-bottom:12px;}
   .sh-desc{font-size:14px;color:var(--text-soft);line-height:1.7;}
@@ -274,5 +321,5 @@ export const SINGLE_CSS = `
   .nav-link.active{background:var(--primary-l);color:var(--primary);}
   @media(max-width:520px){.nav-links{display:none;}.nav-brand-name{max-width:120px;font-size:15px;}}
   @media(max-width:350px){.nav-brand-name{display:none;}}
-  @media(min-width:1024px){.sh-hero{padding:48px 32px 56px;border-radius:0 0 28px 28px;}.sh-name{font-size:40px;}.sh-tagline{font-size:40px;}.sh-section,.sh-intro{max-width:860px;margin-left:auto;margin-right:auto;}.sf-grid{grid-template-columns:1fr 1fr;}.nav-brand-name{max-width:260px;font-size:18px;}}
+  @media(min-width:1024px){.sh-hero{padding:72px 48px 84px;border-radius:0 0 28px 28px;}.sh-hero-content{max-width:1100px;width:100%;margin:0 auto;}.sh-hero-brand{gap:14px;}.sh-name{font-size:22px;}.sh-tagline{font-size:56px;max-width:640px;}.sh-welcome{font-size:17px;max-width:520px;}.sh-float{font-size:64px;opacity:.3;}.sh-hero-visual{width:40%;}.sh-section{max-width:860px;margin-left:auto;margin-right:auto;}.sf-grid{grid-template-columns:1fr 1fr;}.nav-brand-name{max-width:260px;font-size:18px;}}
 `;
