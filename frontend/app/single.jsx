@@ -306,9 +306,11 @@ export const SINGLE_CSS = `
   .sh-hours-row{display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:var(--text);}
   .sh-hours-row.closed{color:var(--text-soft);} .sh-hours-row.closed span:last-child{color:#DC2626;}
   .sh-muted{font-size:13px;color:#94A3B8;padding:12px 0;}
-  .app:has(.sf-footer){padding-bottom:0;}                       /* le pied de page sombre termine la page : pas de bande claire dessous */
-  html:has(.sf-footer){background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 50%,#0F172A 50%,#0F172A 100%);}   /* rebond iOS : clair en haut, sombre en bas */
-  .sf-footer{margin-top:40px;padding:32px 20px calc(24px + env(safe-area-inset-bottom));background:#0F172A;color:#CBD5E1;}
+  /* Le pied de page sombre termine la page : pas de réserve claire dessous, et il est poussé en bas de l'écran si le contenu est court */
+  .app:has(.sf-footer){padding-bottom:0;display:flex;flex-direction:column;}
+  .app:has(.sf-footer) .sf-footer{margin-top:auto;}
+  html:has(.sf-footer){overscroll-behavior-y:none;}             /* pas de rebond blanc sous le pied de page sur mobile */
+  .sf-footer{padding:32px 20px calc(24px + env(safe-area-inset-bottom));background:#0F172A;color:#CBD5E1;border-top:40px solid var(--bg);}   /* la bordure claire tient lieu d'espace au-dessus */
   .sf-grid{display:grid;grid-template-columns:1fr;gap:24px;max-width:860px;margin:0 auto;}
   .sf-col{display:flex;flex-direction:column;gap:12px;}
   .sf-brand{display:flex;align-items:center;gap:12px;}
