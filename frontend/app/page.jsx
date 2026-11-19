@@ -2,7 +2,7 @@
 import { TOUCH_CSS } from "../lib/touch.css";
 import { useHistoryPage, pageFromUrl } from "../lib/useHistoryPage";
 import { openState, localNow, todayLocalISO } from "../lib/hours";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 /** Écrans de l'application client, restaurables depuis l'URL (#écran) au rechargement. */
 const PAGES = ["home", "search", "restaurant", "publicPage", "cart", "confirm", "profile", "history",
@@ -258,7 +258,7 @@ export default function PickEatGoClient() {
     try { const r = await authFetch(`/restaurants/${restId}/favorite/`, { method: "POST" }); const d = await r.json(); if (r.ok) setLiked(p => d.is_favorite ? [...new Set([...p, restId])] : p.filter(i => i !== restId)); }
     catch {}
   };
-  const { data: apiData, loading: restoLoading } = useRestaurants(single ? {} : { status: "active" });   // mode single : l'API ne renvoie que le restaurant lié
+  const { data: apiData, loading: restoLoading, error: restoError, refetch: refetchRestos } = useRestaurants(single ? {} : { status: "active" });   // mode single : l'API ne renvoie que le restaurant lié
   const { createOrder } = useCreateOrder();
 
   // WebSocket — suivi temps réel du statut de la commande
@@ -333,7 +333,7 @@ export default function PickEatGoClient() {
 
   // Restaurants depuis l'API uniquement (plus de fallback mock)
   const API_RESTAURANTS = apiData?.results || [];
-  const ALL_RESTAURANTS = API_RESTAURANTS.map(r => ({
+  const toUiRest = (r) => ({
     ...r,
     image: r.emoji || EMOJI_MAP[Array.isArray(r.cuisine) ? r.cuisine[0] : r.cuisine] || "🍽️",
     banner: r.banner_color || "#FF6B2C",
@@ -349,7 +349,11 @@ export default function PickEatGoClient() {
     menu: [],
     _apiId: r.id,
     _isApi: true,
-  }));
+  });
+  const ALL_RESTAURANTS = API_RESTAURANTS.map(toUiRest);
+  // Mode mono-restaurant : la fiche du restaurant arrive déjà avec la marque (rendue côté serveur) ;
+  // l'accueil s'affiche donc immédiatement, même si l'appel de liste est lent ou échoue.
+  const brandRest = useMemo(() => (single && brandCtx.restaurant?.id ? toUiRest(brandCtx.restaurant) : null), [single, brandCtx.restaurant]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // Après un rechargement : on retrouve le restaurant ouvert (et sa page publique) dès que la liste est chargée
   useEffect(() => {
@@ -604,7 +608,7 @@ export default function PickEatGoClient() {
   const LAST_STEP = STEPS.length - 1;
 
   if (!mounted || !brandCtx.ready) return null;      // la marque (et le mode) doivent être connus avant de choisir l'accueil
-  const singleRest = activeRest || ALL_RESTAURANTS[0] || null;
+  const singleRest = activeRest || ALL_RESTAURANTS[0] || brandRest || null;
 
   return (
     <>
@@ -678,6 +682,8 @@ export default function PickEatGoClient() {
             ? <div className="empty-state"><p style={{fontSize:40}}>🏪</p><p className="empty-title">Application en cours de configuration</p><p className="empty-sub">Cette instance n'est pas encore liée à un restaurant.</p></div>
             : restoLoading && !singleRest
               ? <div className="loading-menu"><Ic n="loader" s={24} c="#FF6B2C"/><p>Chargement...</p></div>
+              : !singleRest
+              ? <div className="empty-state"><p style={{fontSize:40}}>📡</p><p className="empty-title">Connexion au restaurant impossible</p><p className="empty-sub">{restoError ? "Le serveur ne répond pas pour le moment. " : ""}Vérifiez votre connexion puis réessayez.</p><button className="sh-order-btn" style={{marginTop:14}} onClick={() => refetchRestos && refetchRestos()}>Réessayer</button></div>
               : <SingleHome rest={singleRest} brand={brand} reviews={restReviews} reviewsLoading={reviewsLoading}
                   onOrder={() => singleRest && openRest(singleRest)} onMenu={() => setPage("menu")}
                   onAbout={() => singleRest && openPublicPage(singleRest)} onLightbox={setLightbox}/>
