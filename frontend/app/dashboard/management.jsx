@@ -9,6 +9,79 @@ import { get, post, patch, downloadFile, money, qty, todayISO, shiftISO, fmtDate
          Ic, PAYMENT_LABELS, REASON_LABELS, REASON_COLORS } from "./shared";
 import { IngredientsPage } from "./ingredients";
 
+// ─── Paramètres : comptabilité (taux de TVA, comptable, rapport mensuel) ──────
+const prevMonthISO = () => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };
+const parseRate = (v) => { const n = parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null; };
+
+export function AccountingCard({ restaurant, setRestaurant, showToast }) {
+  const init = (r) => ({ vat_rate_on_site: String(parseFloat(r?.vat_rate_on_site ?? 12)), vat_rate_takeaway: String(parseFloat(r?.vat_rate_takeaway ?? 6)),
+    counter_is_on_site: !!r?.counter_is_on_site, accountant_email: r?.accountant_email || "", accounting_auto_send: !!r?.accounting_auto_send });
+  const [form, setForm]     = useState(init(restaurant));
+  const [saving, setSaving] = useState(false);
+  const [month, setMonth]   = useState(prevMonthISO());
+  const [busy, setBusy]     = useState("");
+  useEffect(() => { setForm(init(restaurant)); }, [restaurant?.id]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const save = async () => {
+    const onSite = parseRate(form.vat_rate_on_site), takeaway = parseRate(form.vat_rate_takeaway);
+    if (onSite === null || takeaway === null) { showToast("Taux de TVA illisible : tapez un nombre entre 0 et 100, ex. 12", "error"); return; }
+    if (form.accounting_auto_send && !form.accountant_email.trim()) { showToast("Indiquez l'e-mail du comptable pour activer l'envoi automatique", "error"); return; }
+    setSaving(true);
+    try {
+      const r = await patch(`/restaurants/${restaurant.id}/`, { vat_rate_on_site: onSite, vat_rate_takeaway: takeaway, counter_is_on_site: form.counter_is_on_site,
+        accountant_email: form.accountant_email.trim(), accounting_auto_send: form.accounting_auto_send });
+      setRestaurant(prev => ({ ...prev, vat_rate_on_site: r.vat_rate_on_site, vat_rate_takeaway: r.vat_rate_takeaway, counter_is_on_site: r.counter_is_on_site,
+        accountant_email: r.accountant_email, accounting_auto_send: r.accounting_auto_send }));
+      showToast("Comptabilité enregistrée ✓");
+    } catch (e) { showToast(e.message, "error"); }
+    finally { setSaving(false); }
+  };
+  const downloadMonth = async () => {
+    setBusy("pdf");
+    try { await downloadFile(`/orders/accounting/?restaurant=${restaurant.id}&month=${month}&type=pdf`, `comptabilite-${month}.pdf`); }
+    catch (e) { showToast(e.message, "error"); }
+    finally { setBusy(""); }
+  };
+  const sendMonth = async () => {
+    const email = form.accountant_email.trim();
+    if (!email) { showToast("Indiquez d'abord l'e-mail de votre comptable", "error"); return; }
+    if (!confirm(`Envoyer le rapport de ${month} à ${email} ?`)) return;
+    setBusy("send");
+    try { const r = await post("/orders/accounting/send/", { restaurant: restaurant.id, month, email }); showToast(r.detail || "Rapport envoyé ✓"); }
+    catch (e) { showToast(e.message, "error"); }
+    finally { setBusy(""); }
+  };
+
+  return (
+    <div className="card">
+      <div className="card-hd"><h3 className="card-title">🧾 Comptabilité</h3></div>
+      <p style={{ fontSize: 12, color: "#64748B", marginBottom: 12 }}>Vos prix sont TTC. Ces taux servent à ventiler la TVA dans le rapport comptable ; un plat peut avoir son propre taux (fiche du plat). Faites-les valider par votre comptable.</p>
+      <div className="form-3col">
+        <div><label className="fl">TVA sur place (%)</label><input className="fi" type="text" inputMode="decimal" value={form.vat_rate_on_site} onChange={e => set("vat_rate_on_site", e.target.value)} /></div>
+        <div><label className="fl">TVA à emporter / livraison (%)</label><input className="fi" type="text" inputMode="decimal" value={form.vat_rate_takeaway} onChange={e => set("vat_rate_takeaway", e.target.value)} /></div>
+        <div><label className="fl">E-mail du comptable</label><input className="fi" type="email" placeholder="comptable@cabinet.be" value={form.accountant_email} onChange={e => set("accountant_email", e.target.value)} /></div>
+      </div>
+      {[["counter_is_on_site", "Les ventes encaissées au comptoir sont consommées sur place (taux « sur place »)"],
+        ["accounting_auto_send", "Envoyer automatiquement le rapport du mois écoulé au comptable le 1er du mois (vous êtes en copie)"]].map(([k, l]) => (
+        <label key={k} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          <input type="checkbox" checked={form[k]} onChange={e => set(k, e.target.checked)} style={{ width: 18, height: 18, accentColor: "#FF6B2C", flexShrink: 0 }} />{l}
+        </label>
+      ))}
+      <button className="btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={saving} onClick={save}>{saving ? "…" : <><Ic n="check" s={14} c="white" /> Enregistrer</>}</button>
+      <div style={{ borderTop: "1px solid var(--border)", marginTop: 16, paddingTop: 14 }}>
+        <label className="fl">Rapport comptable d'un mois</label>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <input type="month" className="fi" style={{ width: "auto" }} value={month} max={todayISO().slice(0, 7)} onChange={e => setMonth(e.target.value || prevMonthISO())} />
+          <button className="pill-btn" disabled={busy === "pdf"} onClick={downloadMonth}><Ic n="download" s={13} /> {busy === "pdf" ? "Préparation…" : "Télécharger le PDF"}</button>
+          <button className="pill-btn" disabled={busy === "send"} onClick={sendMonth}>{busy === "send" ? "Envoi…" : "✉️ Envoyer au comptable"}</button>
+        </div>
+        <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 8 }}>Le PDF contient le journal des ventes par jour, la TVA par taux, les encaissements par mode de paiement et les clôtures de caisse. L'envoi joint aussi le détail des ventes en tableur.</p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Graphique à barres (activité par période) ───────────────────────────────
 export function ActivityChart({ periods, metric = "orders", height = 110, highlightLast = true }) {
   const vals = periods.map(p => parseFloat(p[metric] || 0));
@@ -228,6 +301,22 @@ export function SalesPage({ restaurant, showToast, refreshKey = 0 }) {
   }, [restaurant, closureDate]);
   useEffect(() => { loadClosures(); }, [loadClosures, refreshKey]);
 
+  const [sending, setSending] = useState(false);
+  const doAccountingPdf = async () => {
+    setExporting(true);
+    try { await downloadFile(`/orders/accounting/?restaurant=${restaurant.id}&from=${from}&to=${to}&type=pdf`, `comptabilite-${from}-${to}.pdf`); }
+    catch (e) { showToast(e.message, "error"); }
+    finally { setExporting(false); }
+  };
+  const sendToAccountant = async () => {
+    if (!restaurant.accountant_email) { showToast("Renseignez l'e-mail de votre comptable dans Paramètres → Comptabilité", "error"); return; }
+    if (!confirm(`Envoyer le rapport comptable du ${fmtDate(from)} au ${fmtDate(to)} à ${restaurant.accountant_email} ?`)) return;
+    setSending(true);
+    try { const r = await post("/orders/accounting/send/", { restaurant: restaurant.id, from, to }); showToast(r.detail || "Rapport envoyé ✓"); }
+    catch (e) { showToast(e.message, "error"); }
+    finally { setSending(false); }
+  };
+
   const doExport = async (type) => {
     setExporting(true);
     try { await downloadFile(`/orders/sales/export/?restaurant=${restaurant.id}&from=${from}&to=${to}&type=${type}`, `ventes-${from}-${to}.${type}`); }
@@ -261,9 +350,11 @@ export function SalesPage({ restaurant, showToast, refreshKey = 0 }) {
         <select className="fi" style={{ width: "auto" }} value={group} onChange={e => setGroup(e.target.value)}>
           <option value="day">Par jour</option><option value="week">Par semaine</option><option value="month">Par mois</option>
         </select>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6, flexWrap: "wrap" }}>
           <button className="pill-btn" disabled={exporting} onClick={() => doExport("csv")}><Ic n="download" s={13} /> CSV</button>
           <button className="pill-btn" disabled={exporting} onClick={() => doExport("xlsx")}><Ic n="download" s={13} /> Excel</button>
+          <button className="pill-btn" disabled={exporting} title="Journal par jour, TVA par taux, modes de paiement, clôtures de caisse" onClick={doAccountingPdf}><Ic n="download" s={13} /> PDF comptable</button>
+          <button className="pill-btn" disabled={sending} title="Envoie le PDF et le détail des ventes à votre comptable" onClick={sendToAccountant}>{sending ? "Envoi…" : "✉️ Au comptable"}</button>
         </div>
       </div>
 

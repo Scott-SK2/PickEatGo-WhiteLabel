@@ -26,4 +26,6 @@ django-extensions==3.2.3
 black==25.1.0
 flake8==7.1.1
 openpyxl==3.1.5
+reportlab==4.2.5
+pypdf==5.1.0
 pywebpush==2.0.3

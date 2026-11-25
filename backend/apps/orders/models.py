@@ -184,6 +184,7 @@ class OrderItem(models.Model):
     price    = models.DecimalField(max_digits=8, decimal_places=2)
     qty      = models.PositiveIntegerField(default=1)
     options  = models.JSONField(default=list)      # snapshot des options choisies
+    vat_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)   # taux de TVA figé à la commande
 
     class Meta:
         db_table = "order_items"

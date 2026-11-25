@@ -48,6 +48,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
             "logo", "logo_url", "banner", "banner_url", "banner_color", "emoji", "gallery",
             "status", "is_open", "is_open_now", "open_status", "slot_interval", "prep_time_avg", "max_orders_per_slot", "is_featured",
             "vat_number", "receipt_footer",
+            "vat_rate_on_site", "vat_rate_takeaway", "counter_is_on_site", "accountant_email", "accounting_auto_send",
             "allow_on_site", "allow_pickup", "allow_delivery",
             "delivery_fee_mode", "delivery_fee", "delivery_free_above", "delivery_zones", "delivery_min_order",
             "delivery_days", "delivery_from", "delivery_until", "delivery_info", "delivery_schedule_label",
@@ -80,7 +81,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     # Visibles uniquement par l'administration et le propriétaire : contrat, facturation, coordonnées du propriétaire
     PRIVATE_FIELDS = ("owner_email", "contract_model", "commission_pct", "monthly_fee", "featured_fee",
-                      "admin_manages_menu", "contract_notes", "contract_paid", "invoicing_day", "monthly_due", "total_revenue")
+                      "admin_manages_menu", "contract_notes", "contract_paid", "invoicing_day", "monthly_due", "total_revenue",
+                      "accountant_email", "accounting_auto_send")
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -95,6 +97,14 @@ class RestaurantSerializer(serializers.ModelSerializer):
         if is_single_mode():
             data["status"] = Restaurant.ACTIVE          # le restaurant lié est actif par construction
         return data
+
+    def _validate_vat(self, value):
+        if value is not None and not (0 <= value <= 100):
+            raise serializers.ValidationError("Le taux de TVA doit être compris entre 0 et 100 %.")
+        return value
+
+    validate_vat_rate_on_site = _validate_vat
+    validate_vat_rate_takeaway = _validate_vat
 
     def validate_delivery_days(self, value):
         return sorted(set(value or []))

@@ -63,3 +63,8 @@ identiques à PickEatGo, décrits dans le guide restaurateur. Le bilan hebdomada
 récapitulatif des stocks vous parviennent au nom de votre application. La mention
 « Application propulsée par PickEatGo » dans le pied de page, les e-mails et les tickets dépend
 de votre contrat de licence : demandez son retrait à l'éditeur.
+
+## Comptabilité
+
+Les taux de TVA, l'adresse de votre comptable et le rapport comptable mensuel (PDF) se règlent dans
+**Paramètres → Comptabilité**. Voir `docs/14-comptabilite.md`.

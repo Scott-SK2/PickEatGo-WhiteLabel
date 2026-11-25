@@ -1,4 +1,5 @@
 """orders/serializers.py"""
+from .accounting import vat_rate_for
 from rest_framework import serializers
 from django.db import transaction
 from django.utils import timezone
@@ -118,6 +119,7 @@ def build_order_items(order, items_data, *, require_available=True):
             order=order, menu_item=menu_item,
             name=menu_item.name, price=unit_price,
             qty=item_data["qty"], options=opts_snapshot,
+            vat_rate=vat_rate_for(order.restaurant, order.order_type, menu_item),
         )
     return total_price
 

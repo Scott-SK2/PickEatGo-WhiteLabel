@@ -9,7 +9,7 @@ import PushToggle from "../PushToggle";
 import Lightbox from "../Lightbox";
 import { openState, localNow } from "../../lib/hours";
 import { API, get, post, patch, put, del, upload, money, todayISO, Ic, STATUS_CONFIG, TYPE_LABELS, PAYMENT_LABELS, UNIT_LABELS, nextStep, payStep, statusLabel } from "./shared";
-import { SalesPage, StockPage, CustomersPage, CounterSaleModal, NotificationsPanel, ActivityChart, PaymentChooser } from "./management";
+import { SalesPage, StockPage, CustomersPage, CounterSaleModal, NotificationsPanel, ActivityChart, PaymentChooser, AccountingCard } from "./management";
 import MyAppCard from "./myapp";
 import { useBrand } from "../../lib/BrandContext";
 
@@ -46,7 +46,7 @@ const CUISINE_EMOJI = {
 const orderTotal = (items) => (items||[]).reduce((s,i) => s + parseFloat(i.price||0) * (i.qty||i.quantity||1), 0);
 // « 15€ », « 15,50 », « 3.20 » → nombre (null si vide ou illisible)
 const parseMoney = (v) => { const n = parseFloat(String(v ?? "").replace(/[€\s]/g, "").replace(",", ".")); return isNaN(n) ? null : n; };
-const EMPTY_ITEM = {name:"",category_id:"",price:"",description:"",image:null,imagePreview:null,photos:[],newPhotos:[],removedPhotos:[],options:[],cost_price:"",stock_qty:"",low_stock_threshold:"5",recipe:[],recipeOrig:"[]",
+const EMPTY_ITEM = {name:"",category_id:"",price:"",description:"",image:null,imagePreview:null,photos:[],newPhotos:[],removedPhotos:[],options:[],cost_price:"",vat_rate:"",stock_qty:"",low_stock_threshold:"5",recipe:[],recipeOrig:"[]",
                     available_days:[],available_from:"",available_until:"",available_on:""};
 const DAY_SHORT = ["L","M","M","J","V","S","D"];
 // Coût matière d'une recette (lignes {ingredient, qty}) à partir de la liste des ingrédients
@@ -776,6 +776,7 @@ export default function RestaurantDashboard() {
     if(!formItem.name.trim()){showToast("Indiquez le nom du plat","error");return;}
     if(priceVal===null){showToast("Prix manquant ou illisible : tapez un nombre, ex. 15 ou 15,50","error");return;}
     if(priceVal<=0){showToast("Le prix doit être supérieur à 0","error");return;}
+    if(formItem.vat_rate!==""&&(parseMoney(formItem.vat_rate)===null||parseMoney(formItem.vat_rate)>100)){showToast("Taux de TVA illisible : tapez un nombre entre 0 et 100, ex. 21","error");return;}
     if(formItem.cost_price!==""&&formItem.recipe.length===0&&parseMoney(formItem.cost_price)===null){showToast("Prix de revient illisible : tapez un nombre, ex. 3,20","error");return;}
     setSaving(true);
     try {
@@ -789,6 +790,7 @@ export default function RestaurantDashboard() {
       }
       const body={name:formItem.name.trim(),price:priceVal,description:formItem.description,category:categoryId,options:formItem.options.map(o=>({label:o.label,extra_price:parseMoney(o.extra_price)||0})),
         cost_price: parseMoney(formItem.cost_price),
+        vat_rate: formItem.vat_rate===""?null:parseMoney(formItem.vat_rate),
         low_stock_threshold: Math.max(0,parseInt(formItem.low_stock_threshold)||0),
         available_days: formItem.available_days, available_from: formItem.available_from||null, available_until: formItem.available_until||null, available_on: formItem.available_on||null};
       if(!editItem) body.is_available=true;
@@ -820,7 +822,7 @@ export default function RestaurantDashboard() {
     setEditItem(item.id);
     const recipe=(item.recipe||[]).map(l=>({ingredient:l.ingredient,qty:String(parseFloat(l.qty))}));
     setFormItem({name:item.name,category_id:String(item.category||""),price:String(item.price),description:item.description||"",image:null,imagePreview:item.image_url||null,photos:item.photos||[],newPhotos:[],removedPhotos:[],options:(item.options||[]).map(o=>({label:o.label,extra_price:String(o.extra_price||0)})),
-      cost_price:item.cost_price==null?"":String(item.cost_price),stock_qty:item.stock_qty==null?"":String(item.stock_qty),low_stock_threshold:String(item.low_stock_threshold??5),
+      cost_price:item.cost_price==null?"":String(item.cost_price),vat_rate:item.vat_rate==null?"":String(parseFloat(item.vat_rate)),stock_qty:item.stock_qty==null?"":String(item.stock_qty),low_stock_threshold:String(item.low_stock_threshold??5),
       recipe, recipeOrig:JSON.stringify(recipe.map(l=>[l.ingredient,String(l.qty)])),
       available_days:item.available_days||[],available_from:item.available_from?String(item.available_from).slice(0,5):"",available_until:item.available_until?String(item.available_until).slice(0,5):"",available_on:item.available_on||""});
     setNewOption({label:"",extra_price:""});setNewLine({ingredient:"",qty:""});
@@ -1242,6 +1244,9 @@ export default function RestaurantDashboard() {
                 <div className="card" style={{gridColumn:"1/-1"}}>
                   <MarketingCard restaurant={restaurant} setRestaurant={setRestaurant} showToast={showToast}/>
                 </div>
+                <div style={{gridColumn:"1/-1"}}>
+                  <AccountingCard restaurant={restaurant} setRestaurant={setRestaurant} showToast={showToast}/>
+                </div>
                 <div className="card" style={{gridColumn:"1/-1"}}>
                   <TeamCard restaurant={restaurant} employees={employees} setEmployees={setEmployees} showToast={showToast}/>
                   <div className="card" style={{marginTop:16}}>
@@ -1324,6 +1329,9 @@ export default function RestaurantDashboard() {
                 <div><label className="fl">Stock (unités)</label><input className="fi" type="text" inputMode="numeric" min="0" placeholder="∞" value={formItem.stock_qty} onChange={e=>setFormItem(p=>({...p,stock_qty:e.target.value}))}/></div>
                 <div><label className="fl">Seuil d'alerte</label><input className="fi" type="text" inputMode="numeric" min="0" value={formItem.low_stock_threshold} onChange={e=>setFormItem(p=>({...p,low_stock_threshold:e.target.value}))}/></div>
               </div>
+              <div><label className="fl">TVA propre à ce plat (%) <span style={{fontWeight:400,color:"#94A3B8"}}>· facultatif</span></label>
+                <input className="fi" type="text" inputMode="decimal" placeholder={`Vide : ${parseFloat(restaurant?.vat_rate_on_site??12)} % sur place, ${parseFloat(restaurant?.vat_rate_takeaway??6)} % à emporter`} value={formItem.vat_rate} onChange={e=>setFormItem(p=>({...p,vat_rate:e.target.value}))}/>
+                <p style={{fontSize:11,color:"#94A3B8",marginTop:4}}>À renseigner pour un produit qui a son propre taux quel que soit le mode de service, par exemple 21 pour une boisson alcoolisée.</p></div>
               <p style={{fontSize:11,color:"#94A3B8",marginTop:-6}}>{formItem.recipe.length>0?"Prix de revient calculé depuis la recette. ":"Le prix de revient sert au calcul de la marge dans Ventes. "}Stock vide = pas de comptage à l'unité{formItem.recipe.length>0?" (la disponibilité suit les ingrédients)":" (toujours disponible)"}.</p>
             </div>
 

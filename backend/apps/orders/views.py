@@ -15,7 +15,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import Order, DailyClosure
 from .serializers import OrderSerializer, OrderCreateSerializer, CounterSaleSerializer, DailyClosureSerializer
-from . import reports
+from . import reports, accounting
 from apps.menus.stock import restore_for_order
 from apps.restaurants.access import get_owned_restaurant
 from apps.notifications.push import notify_order_status, notify_new_order
@@ -207,6 +207,64 @@ class OrderViewSet(viewsets.ModelViewSet):
             resp = HttpResponse(reports.export_csv(rows), content_type="text/csv; charset=utf-8")
             resp["Content-Disposition"] = f'attachment; filename="{base}.csv"'
         return resp
+
+    def _accounting_range(self, params):
+        """?month=YYYY-MM (mois entier) ou ?from=&to= ; sans paramètre : le mois en cours jusqu'à aujourd'hui."""
+        if params.get("month"):
+            try:
+                return accounting.month_range(params.get("month"))
+            except (ValueError, TypeError):
+                pass
+        if params.get("from") or params.get("to"):
+            return reports.parse_range(params)
+        today = timezone.localdate()
+        return today.replace(day=1), today
+
+    @action(detail=False, methods=["get"], url_path="accounting")
+    def accounting_report(self, request):
+        """
+        GET /api/v1/orders/accounting/?restaurant=&month=YYYY-MM | &from=&to= [&type=pdf]
+        Rapport comptable : journal par jour, TVA par taux, modes de paiement, clôtures. type=pdf → document PDF.
+        """
+        restaurant, err = self._restaurant_or_403(request, request.query_params.get("restaurant"))
+        if err:
+            return err
+        d_from, d_to = self._accounting_range(request.query_params)
+        if request.query_params.get("type") == "pdf":
+            _, pdf, _, base = accounting.build_documents(restaurant, d_from, d_to)
+            resp = HttpResponse(pdf, content_type="application/pdf")
+            resp["Content-Disposition"] = f'attachment; filename="{base}.pdf"'
+            return resp
+        return Response(accounting.accounting_report(restaurant, d_from, d_to))
+
+    @action(detail=False, methods=["post"], url_path="accounting/send")
+    def accounting_send(self, request):
+        """
+        POST /api/v1/orders/accounting/send/ {"restaurant", "month" | "from","to", "email"?}
+        Envoie le rapport PDF et le détail des ventes au comptable (adresse du restaurant, ou "email" pour cet envoi).
+        """
+        from django.conf import settings
+        from django.core.validators import validate_email
+        restaurant, err = self._restaurant_or_403(request, request.data.get("restaurant"))
+        if err:
+            return err
+        email = str(request.data.get("email") or restaurant.accountant_email or "").strip()
+        if not email:
+            return Response({"detail": "Renseignez d'abord l'adresse e-mail de votre comptable (Paramètres → Comptabilité)."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({"detail": "Adresse e-mail du comptable invalide."}, status=status.HTTP_400_BAD_REQUEST)
+        if settings.EMAIL_BACKEND.endswith("console.EmailBackend"):
+            return Response({"detail": "L'envoi d'e-mails n'est pas encore configuré sur cette application. Téléchargez le PDF et transmettez-le vous-même, ou contactez votre éditeur."},
+                            status=status.HTTP_400_BAD_REQUEST)   # 400 et non 503 : le site ne doit pas retenter l'envoi
+        d_from, d_to = self._accounting_range(request.data)
+        try:
+            report = accounting.send_to_accountant(restaurant, d_from, d_to, to_email=email)
+        except Exception as e:
+            print(f"[accounting] envoi au comptable impossible : {e}")
+            return Response({"detail": "L'e-mail n'a pas pu être envoyé. Réessayez dans un instant."}, status=status.HTTP_502_BAD_GATEWAY)
+        return Response({"detail": f"Rapport {report['label']} envoyé à {email}.", "to": email, "label": report["label"]})
 
     @action(detail=False, methods=["get"], url_path="customers")
     def customers(self, request):
