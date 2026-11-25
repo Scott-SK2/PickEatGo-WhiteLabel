@@ -129,7 +129,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             "id", "category", "category_name", "name", "description", "price",
             "image", "image_url", "image_alt", "photos", "image_urls",
             "is_available", "is_featured", "allergens", "calories",
-            "cost_price", "stock_qty", "low_stock_threshold", "track_stock",
+            "vat_rate", "cost_price", "stock_qty", "low_stock_threshold", "track_stock",
             "is_low_stock", "is_out_of_stock", "auto_disabled",
             "has_recipe", "effective_stock", "portions_available", "limited_by", "recipe",
             "available_days", "available_from", "available_until", "available_on",
@@ -137,6 +137,11 @@ class MenuItemSerializer(serializers.ModelSerializer):
             "order", "options", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_vat_rate(self, value):
+        if value is not None and not (0 <= value <= 100):
+            raise serializers.ValidationError("Le taux de TVA doit être compris entre 0 et 100 %.")
+        return value
 
     def validate_cost_price(self, value):
         if value is not None and value < 0:

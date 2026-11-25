@@ -78,6 +78,13 @@ class Restaurant(models.Model):
     vat_number      = models.CharField(max_length=30, blank=True, help_text="N° de TVA imprimé sur le ticket client")
     receipt_footer  = models.CharField(max_length=200, blank=True, help_text="Message en bas du ticket client (ex. Merci et à bientôt !)")
 
+    # Comptabilité : taux de TVA (prix affichés TTC) et envoi du rapport mensuel au comptable
+    vat_rate_on_site     = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("12.00"), help_text="Taux de TVA des plats consommés sur place (%)")
+    vat_rate_takeaway    = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("6.00"), help_text="Taux de TVA des plats à emporter et livrés (%)")
+    counter_is_on_site   = models.BooleanField(default=False, help_text="Les ventes encaissées au comptoir sont consommées sur place")
+    accountant_email     = models.EmailField(blank=True, help_text="Adresse du comptable (rapport comptable mensuel)")
+    accounting_auto_send = models.BooleanField(default=False, help_text="Envoyer le rapport du mois écoulé au comptable le 1er du mois")
+
     # Contrat
     contract_model    = models.CharField(max_length=20, choices=CONTRACT_CHOICES, default=CONTRACT_COMMISSION)
     commission_pct    = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)

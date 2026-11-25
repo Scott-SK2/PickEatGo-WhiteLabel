@@ -11,7 +11,7 @@ les secrets partagés (Cloudinary, SMTP) et les identifiants Render / Vercel. Le
   2. crée sur Render une base Postgres, un Key Value et le service web (dépôt commun, branche main,
      déploiement automatique désactivé le temps de l'amorçage) avec toutes les variables d'instance ;
   3. lance un job Render `bootstrap_tenant --restaurant-id <uuid>` (compte, restaurant, catégories, horaires, marque) ;
-  4. déclenche le premier déploiement, puis crée les cron jobs stock_digest (7 h) et weekly_report (lundi 8 h) ;
+  4. déclenche le premier déploiement, puis crée les cron jobs stock_digest (7 h), weekly_report (lundi 8 h) et monthly_accounting (le 1er du mois) ;
   5. crée le projet Vercel (dossier frontend, NEXT_PUBLIC_API_URL / NEXT_PUBLIC_WS_URL) et attache le domaine ;
   6. ajoute l'instance au registre interne de l'éditeur (nom, domaine, identifiants des services, date, contact).
 
@@ -191,7 +191,8 @@ def main():
     # 5. Cron jobs (mêmes variables que le service)
     print("5. Cron jobs")
     crons = {}
-    for name, schedule, command in (("stock-digest", "0 7 * * *", "python manage.py stock_digest"), ("weekly-report", "0 8 * * 1", "python manage.py weekly_report")):
+    for name, schedule, command in (("stock-digest", "0 7 * * *", "python manage.py stock_digest"), ("weekly-report", "0 8 * * 1", "python manage.py weekly_report"),
+                                    ("monthly-accounting", "0 6 1 * *", "python manage.py monthly_accounting")):
         c = render.call("POST", "/services", {
             "type": "cron_job", "name": f"{slug}-{name}", "ownerId": owner_id, "repo": repo, "branch": branch, "rootDir": "backend",
             "envVars": env_list(env_vars),

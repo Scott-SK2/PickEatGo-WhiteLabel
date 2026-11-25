@@ -32,7 +32,8 @@ demi-journée à la main, moins d'une heure avec l'outillage.
    `NEXT_PUBLIC_WS_URL=wss://<service>.onrender.com`. Attacher le sous-domaine PickEatGo
    (`<slug>.pickeatgo.app`) ou le domaine du restaurant (CNAME `cname.vercel-dns.com` fourni au restaurateur).
 7. Ajouter l'origine du frontend dans `CORS_ALLOWED_ORIGINS` si elle a changé ; créer les cron jobs
-   `stock_digest` (`0 7 * * *`) et `weekly_report` (`0 8 * * 1`) avec les mêmes variables.
+   `stock_digest` (`0 7 * * *`), `weekly_report` (`0 8 * * 1`) et `monthly_accounting` (`0 6 1 * *`, rapport
+   comptable du mois écoulé envoyé au comptable des restaurants qui l'ont activé) avec les mêmes variables.
 8. Remettre les accès au restaurateur : il complète **Paramètres → Mon application** (identité,
    icônes, textes légaux), ses horaires, son menu et ses modes de commande, puis ouvre.
    Il change son mot de passe initial dans « Mon profil » (`/#profile`). En cas d'oubli sans SMTP :

@@ -110,3 +110,15 @@ puis redéployer :
 |---|---|
 | `NEXT_PUBLIC_API_URL` | `https://<backend>.onrender.com/api/v1` |
 | `NEXT_PUBLIC_WS_URL` | `wss://<backend>.onrender.com` |
+
+## 3 ter. Cron Job : rapport comptable mensuel (optionnel)
+
+Envoie le 1er du mois, au comptable de chaque restaurant qui l'a activé (Paramètres → Comptabilité), le rapport
+comptable du mois écoulé : PDF (journal des ventes par jour, TVA par taux, modes de paiement, clôtures de caisse)
+et détail des ventes en tableur. Le restaurateur est en copie. New → **Cron Job**, même repo, Root Directory
+`backend`, mêmes variables d'environnement que le backend, commande :
+```
+pip install -r requirements.txt && python manage.py monthly_accounting
+```
+Planification `0 6 1 * *`. Nécessite la configuration SMTP. Pour renvoyer un mois précis :
+`python manage.py monthly_accounting --month 2026-10` ; `--dry-run` affiche sans envoyer.

@@ -68,6 +68,8 @@ class MenuItem(models.Model):
 
     # ── Gestion : stock et coût ────────────────────────────────────────────────
     # stock_qty vide = stock non suivi (plat toujours disponible tant que is_available)
+    vat_rate            = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True,
+                                              help_text="Taux de TVA propre à ce plat (ex. 21 pour une boisson alcoolisée). Vide : taux du mode de service")
     cost_price          = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True,
                                               help_text="Prix de revient (coût matière) — sert au calcul de la marge")
     stock_qty           = models.IntegerField(null=True, blank=True, help_text="Quantité en stock. Vide = stock non suivi")
